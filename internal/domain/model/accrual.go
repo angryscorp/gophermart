@@ -1,4 +1,4 @@
-package domain
+package model
 
 type Accrual struct {
 	Order   string        `json:"order"`

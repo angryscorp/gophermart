@@ -34,19 +34,6 @@ services:
       - ACCRUAL_SYSTEM_ADDRESS=:8080
       - DATABASE_URI=postgres://db_user:db_password@postgres:5432/gophermart?sslmode=disable
 
-  accrual:
-    build:
-      context: .
-      dockerfile: cmd/gophermart/Dockerfile
-    ports:
-      - "8080:8080"
-    networks:
-      - app-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-
 networks:
   app-network:
     driver: bridge

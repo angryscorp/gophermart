@@ -1,12 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/angryscorp/gophermart/internal/config"
-	_ "github.com/rs/zerolog"
-	"net/http"
+	"github.com/angryscorp/gophermart/internal/http/handler"
+	"github.com/angryscorp/gophermart/internal/http/router"
+	"github.com/rs/zerolog"
 	"os"
 )
 
@@ -18,10 +18,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		configJSON, _ := json.Marshal(cfg)
-		_, _ = w.Write([]byte(string(configJSON)))
-	})
+	zeroLogger := zerolog.New(os.Stdout).
+		With().
+		Timestamp().
+		Logger()
 
-	_ = http.ListenAndServe(":8081", nil)
+	r := router.New(zeroLogger)
+	r.RegisterAuth(handler.NewAuth())
+	
+	err = r.Run(cfg.ServerAddress)
+	if err != nil {
+		_, _ = fmt.Fprint(os.Stderr, err.Error())
+		os.Exit(1)
+	}
 }
