@@ -2,16 +2,18 @@ package users
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/angryscorp/gophermart/internal/domain/repository"
+	"github.com/angryscorp/gophermart/internal/repository/users/db"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/pkg/errors"
 	"time"
 )
 
 type Users struct {
-	pool *pgxpool.Pool
+	pool    *pgxpool.Pool
+	queries *db.Queries
 }
 
 var _ repository.Users = (*Users)(nil)
@@ -39,44 +41,32 @@ func New(dsn string) (*Users, error) {
 	}
 
 	return &Users{
-		pool: pool,
+		pool:    pool,
+		queries: db.New(pool),
 	}, nil
 }
 
 func (r Users) CreateUser(ctx context.Context, username, passwordHash string) error {
-	fmt.Println("-->>CreateUser", username, passwordHash)
-
-	const query = `
-    INSERT INTO users (username, password_hash)
-	VALUES ($1, $2)
-	`
-
-	_, err := r.pool.Exec(ctx, query, username, passwordHash)
-	if err != nil {
-		return fmt.Errorf("failed to update metric: %w", err)
+	if err := r.queries.CreateUser(ctx, db.CreateUserParams{
+		Username:     username,
+		PasswordHash: passwordHash,
+	}); err != nil {
+		return errors.Wrap(repository.ErrInvalidCredentials, err.Error())
 	}
 
 	return nil
 }
 
 func (r Users) CheckUser(ctx context.Context, username, passwordHash string) error {
-	fmt.Println("-->>CheckUser", username, passwordHash)
+	_, err := r.queries.CheckUser(ctx, db.CheckUserParams{
+		Username:     username,
+		PasswordHash: passwordHash,
+	})
 
-	const query = `
-	SELECT 1 
-	FROM users 
-	WHERE 
-		username = $1 
-	  AND 
-		password_hash = $2
-	`
-
-	var exists int
-	err := r.pool.QueryRow(ctx, query, username, passwordHash).Scan(&exists)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return fmt.Errorf("match not found")
+		return repository.ErrInvalidCredentials
 	} else if err != nil {
-		return fmt.Errorf("unknown error")
+		return errors.Wrap(repository.ErrUnknownInternalError, err.Error())
 	}
 
 	return nil
