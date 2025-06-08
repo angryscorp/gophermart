@@ -6,6 +6,8 @@ import (
 	"github.com/angryscorp/gophermart/internal/config"
 	"github.com/angryscorp/gophermart/internal/http/handler"
 	"github.com/angryscorp/gophermart/internal/http/router"
+	"github.com/angryscorp/gophermart/internal/repository/users"
+	"github.com/angryscorp/gophermart/internal/usecase/auth"
 	"github.com/rs/zerolog"
 	"os"
 )
@@ -23,9 +25,11 @@ func main() {
 		Timestamp().
 		Logger()
 
+	authUsecase := auth.New(users.New())
+
 	r := router.New(zeroLogger)
-	r.RegisterAuth(handler.NewAuth())
-	
+	r.RegisterAuth(handler.NewAuth(authUsecase))
+
 	err = r.Run(cfg.ServerAddress)
 	if err != nil {
 		_, _ = fmt.Fprint(os.Stderr, err.Error())

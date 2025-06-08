@@ -1,6 +1,8 @@
 package usecase
 
+import "context"
+
 type Auth interface {
-	SignUp() error
-	SignIn() error
+	SignUp(ctx context.Context, username, password string) error
+	SignIn(ctx context.Context, username, password string) error
 }
