@@ -8,3 +8,12 @@ sql:
         package: "db"
         out: "./internal/repository/users/db"
         sql_package: "pgx/v5"
+
+  - engine: "postgresql"
+    queries: "./internal/repository/orders/queries"
+    schema: "./internal/repository/migration/migrations"
+    gen:
+      go:
+        package: "db"
+        out: "./internal/repository/orders/db"
+        sql_package: "pgx/v5"

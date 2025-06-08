@@ -6,3 +6,8 @@ type AuthHandler interface {
 	SignIn(c *gin.Context)
 	SignUp(c *gin.Context)
 }
+
+type OrdersHandler interface {
+	UploadOrder(c *gin.Context)
+	AllOrders(c *gin.Context)
+}

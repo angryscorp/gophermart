@@ -29,3 +29,8 @@ func (r Router) RegisterAuth(auth AuthHandler) {
 	r.engine.POST("/api/user/register", auth.SignUp)
 	r.engine.POST("/api/user/login", auth.SignIn)
 }
+
+func (r Router) RegisterOrders(orders OrdersHandler) {
+	r.engine.POST("/api/user/orders", orders.UploadOrder)
+	r.engine.GET("/api/user/orders", orders.AllOrders)
+}

@@ -1,4 +1,4 @@
-package handler
+package auth
 
 import (
 	"github.com/angryscorp/gophermart/internal/domain/usecase"
@@ -12,7 +12,7 @@ type Auth struct {
 
 var _ router.AuthHandler = (*Auth)(nil)
 
-func NewAuth(usecase usecase.Auth) Auth {
+func New(usecase usecase.Auth) Auth {
 	return Auth{usecase: usecase}
 }
 
