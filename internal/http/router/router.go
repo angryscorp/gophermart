@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/angryscorp/gophermart/internal/http/logger"
+	"github.com/angryscorp/gophermart/internal/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
@@ -31,6 +32,6 @@ func (r Router) RegisterAuth(auth AuthHandler) {
 }
 
 func (r Router) RegisterOrders(orders OrdersHandler) {
-	r.engine.POST("/api/user/orders", orders.UploadOrder)
-	r.engine.GET("/api/user/orders", orders.AllOrders)
+	r.engine.POST("/api/user/orders", middleware.AuthValidation(), orders.UploadOrder)
+	r.engine.GET("/api/user/orders", middleware.AuthValidation(), orders.AllOrders)
 }

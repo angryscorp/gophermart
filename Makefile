@@ -15,5 +15,4 @@ status:
 	docker-compose ps
 
 .PHONY: restart
-restart:
-	docker-compose restart
+restart: stop start
