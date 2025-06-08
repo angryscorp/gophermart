@@ -6,6 +6,7 @@ import (
 	"github.com/angryscorp/gophermart/internal/config"
 	"github.com/angryscorp/gophermart/internal/http/handler"
 	"github.com/angryscorp/gophermart/internal/http/router"
+	"github.com/angryscorp/gophermart/internal/repository/migration"
 	"github.com/angryscorp/gophermart/internal/repository/users"
 	"github.com/angryscorp/gophermart/internal/usecase/auth"
 	"github.com/rs/zerolog"
@@ -25,7 +26,18 @@ func main() {
 		Timestamp().
 		Logger()
 
-	authUsecase := auth.New(users.New())
+	if err := migration.Migrate(cfg.DatabaseDSN); err != nil {
+		_, _ = fmt.Fprint(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+
+	usersRepository, err := users.New(cfg.DatabaseDSN)
+	if err != nil {
+		_, _ = fmt.Fprint(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+
+	authUsecase := auth.New(usersRepository)
 
 	r := router.New(zeroLogger)
 	r.RegisterAuth(handler.NewAuth(authUsecase))
