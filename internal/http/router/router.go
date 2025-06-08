@@ -35,3 +35,9 @@ func (r Router) RegisterOrders(orders OrdersHandler) {
 	r.engine.POST("/api/user/orders", middleware.AuthValidation(), orders.UploadOrder)
 	r.engine.GET("/api/user/orders", middleware.AuthValidation(), orders.AllOrders)
 }
+
+func (r Router) RegisterBalance(balance BalanceHandler) {
+	r.engine.GET("/api/user/balance", middleware.AuthValidation(), balance.Balance)
+	r.engine.POST("/api/user/balance/withdraw", middleware.AuthValidation(), balance.Withdraw)
+	r.engine.GET("/api/user/withdrawals", middleware.AuthValidation(), balance.AllWithdrawals)
+}

@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"github.com/angryscorp/gophermart/internal/config"
 	handlerAuth "github.com/angryscorp/gophermart/internal/http/handler/auth"
+	handlerBalance "github.com/angryscorp/gophermart/internal/http/handler/balance"
 	handlerOrders "github.com/angryscorp/gophermart/internal/http/handler/orders"
 	"github.com/angryscorp/gophermart/internal/http/router"
+	repositoryBalance "github.com/angryscorp/gophermart/internal/repository/balance"
 	"github.com/angryscorp/gophermart/internal/repository/migration"
 	repositoryOrders "github.com/angryscorp/gophermart/internal/repository/orders"
 	repositoryUsers "github.com/angryscorp/gophermart/internal/repository/users"
 	"github.com/angryscorp/gophermart/internal/usecase/auth"
+	"github.com/angryscorp/gophermart/internal/usecase/balance"
 	"github.com/angryscorp/gophermart/internal/usecase/orders"
 	"github.com/rs/zerolog"
 	"os"
@@ -46,12 +49,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	balanceRepository, err := repositoryBalance.New(cfg.DatabaseDSN)
+	if err != nil {
+		_, _ = fmt.Fprint(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+
 	authUsecase := auth.New(usersRepository)
 	ordersUsecase := orders.New(ordersRepository)
+	balanceUsecase := balance.New(balanceRepository)
 
 	r := router.New(zeroLogger)
 	r.RegisterAuth(handlerAuth.New(authUsecase))
 	r.RegisterOrders(handlerOrders.New(ordersUsecase))
+	r.RegisterBalance(handlerBalance.New(balanceUsecase))
 
 	err = r.Run(cfg.ServerAddress)
 	if err != nil {
