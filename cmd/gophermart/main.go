@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/angryscorp/gophermart/internal/config"
+	"github.com/angryscorp/gophermart/internal/domain/model"
 	handlerAuth "github.com/angryscorp/gophermart/internal/http/handler/auth"
 	handlerBalance "github.com/angryscorp/gophermart/internal/http/handler/balance"
 	handlerOrders "github.com/angryscorp/gophermart/internal/http/handler/orders"
@@ -12,10 +13,12 @@ import (
 	"github.com/angryscorp/gophermart/internal/repository/migration"
 	repositoryOrders "github.com/angryscorp/gophermart/internal/repository/orders"
 	repositoryUsers "github.com/angryscorp/gophermart/internal/repository/users"
+	"github.com/angryscorp/gophermart/internal/usecase/accrual"
 	"github.com/angryscorp/gophermart/internal/usecase/auth"
 	"github.com/angryscorp/gophermart/internal/usecase/balance"
 	"github.com/angryscorp/gophermart/internal/usecase/orders"
 	"github.com/rs/zerolog"
+	"net/http"
 	"os"
 )
 
@@ -55,8 +58,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	requestChan := make(chan string)
+	responseChan := make(chan model.Accrual)
+
+	accrualAdapter := accrual.NewAdapter(&http.Client{}, zeroLogger, cfg.AccrualAddress)
+	accrualWorker := accrual.NewWorker(accrualAdapter, 10, requestChan, responseChan)
+	accrualWorker.Run()
+
 	authUsecase := auth.New(usersRepository)
-	ordersUsecase := orders.New(ordersRepository)
+	ordersUsecase := orders.New(ordersRepository, requestChan, responseChan)
 	balanceUsecase := balance.New(balanceRepository)
 
 	r := router.New(zeroLogger)

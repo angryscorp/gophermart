@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog"
 	"io"
 	"net/http"
+	"strings"
 )
 
 type Adapter struct {
@@ -22,6 +23,14 @@ func NewAdapter(
 	logger zerolog.Logger,
 	accrualAddress string,
 ) Adapter {
+	if !strings.HasPrefix(accrualAddress, "http://") && !strings.HasPrefix(accrualAddress, "https://") {
+		if strings.HasPrefix(accrualAddress, ":") {
+			accrualAddress = "http://localhost" + accrualAddress
+		} else {
+			accrualAddress = "http://" + accrualAddress
+		}
+	}
+
 	return Adapter{
 		client:         client,
 		logger:         logger,
@@ -52,7 +61,11 @@ func (a Adapter) Status(orderNumber string) (model.Accrual, error) {
 		return model.Accrual{}, err
 	}
 
-	a.logger.Info().Str("order", orderNumber).Str("status", string(accrualResp.Status)).Int("accrual", accrualResp.Accrual).Msg("accrual info received")
+	accrualValue := 0
+	if accrualResp.Accrual != nil {
+		accrualValue = *accrualResp.Accrual
+	}
+	a.logger.Info().Str("order", orderNumber).Str("status", string(accrualResp.Status)).Int("accrual", accrualValue).Msg("accrual info received")
 
 	return accrualResp, nil
 }
