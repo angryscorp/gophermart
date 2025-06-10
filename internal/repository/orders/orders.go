@@ -38,3 +38,8 @@ func (o Orders) UpdateOrder(ctx context.Context, order model.Order) error {
 	//TODO implement me
 	panic("implement me")
 }
+
+func (o Orders) AllOrders(ctx context.Context) ([]model.Order, error) {
+	//TODO implement me
+	panic("implement me")
+}

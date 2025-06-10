@@ -66,7 +66,7 @@ func main() {
 	accrualWorker.Run()
 
 	authUsecase := auth.New(usersRepository)
-	ordersUsecase := orders.New(ordersRepository, requestChan, responseChan)
+	ordersUsecase := orders.New(ordersRepository, requestChan, responseChan, zeroLogger)
 	balanceUsecase := balance.New(balanceRepository)
 
 	r := router.New(zeroLogger)
