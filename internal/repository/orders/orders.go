@@ -3,43 +3,38 @@ package orders
 import (
 	"context"
 	"fmt"
+	"github.com/angryscorp/gophermart/internal/domain/model"
 	"github.com/angryscorp/gophermart/internal/domain/repository"
+	"github.com/angryscorp/gophermart/internal/repository/common"
 	"github.com/angryscorp/gophermart/internal/repository/orders/db"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"time"
 )
 
 type Orders struct {
-	pool    *pgxpool.Pool
 	queries *db.Queries
 }
 
 var _ repository.Orders = (*Orders)(nil)
 
-const (
-	ctxTimeout = 10 * time.Second
-)
-
 func New(dsn string) (*Orders, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), ctxTimeout)
-	defer cancel()
-
-	config, err := pgxpool.ParseConfig(dsn)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse dsn: %w", err)
-	}
-
-	pool, err := pgxpool.NewWithConfig(ctx, config)
+	pool, err := common.CreatePGXPool(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create pool: %w", err)
 	}
 
-	if err := pool.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
+	return &Orders{queries: db.New(pool)}, nil
+}
 
-	return &Orders{
-		pool:    pool,
-		queries: db.New(pool),
-	}, nil
+func (o Orders) OrderInfo(ctx context.Context) model.Order {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (o Orders) CreateOrder(ctx context.Context, order model.Order) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (o Orders) UpdateOrder(ctx context.Context, order model.Order) error {
+	//TODO implement me
+	panic("implement me")
 }

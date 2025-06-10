@@ -4,46 +4,25 @@ import (
 	"context"
 	"fmt"
 	"github.com/angryscorp/gophermart/internal/domain/repository"
+	"github.com/angryscorp/gophermart/internal/repository/common"
 	"github.com/angryscorp/gophermart/internal/repository/users/db"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pkg/errors"
-	"time"
 )
 
 type Users struct {
-	pool    *pgxpool.Pool
 	queries *db.Queries
 }
 
 var _ repository.Users = (*Users)(nil)
 
-const (
-	ctxTimeout = 10 * time.Second
-)
-
 func New(dsn string) (*Users, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), ctxTimeout)
-	defer cancel()
-
-	config, err := pgxpool.ParseConfig(dsn)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse dsn: %w", err)
-	}
-
-	pool, err := pgxpool.NewWithConfig(ctx, config)
+	pool, err := common.CreatePGXPool(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create pool: %w", err)
 	}
 
-	if err := pool.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
-
-	return &Users{
-		pool:    pool,
-		queries: db.New(pool),
-	}, nil
+	return &Users{queries: db.New(pool)}, nil
 }
 
 func (r Users) CreateUser(ctx context.Context, username, passwordHash string) error {
