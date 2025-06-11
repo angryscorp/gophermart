@@ -7,6 +7,7 @@ import (
 	"github.com/angryscorp/gophermart/internal/domain/repository"
 	"github.com/angryscorp/gophermart/internal/repository/common"
 	"github.com/angryscorp/gophermart/internal/repository/orders/db"
+	"github.com/angryscorp/gophermart/internal/utils"
 )
 
 type Orders struct {
@@ -24,22 +25,60 @@ func New(dsn string) (*Orders, error) {
 	return &Orders{queries: db.New(pool)}, nil
 }
 
-func (o Orders) OrderInfo(ctx context.Context) model.Order {
-	//TODO implement me
-	panic("implement me")
+func (o Orders) OrderInfoForUpdate(ctx context.Context, number string) (model.Order, error) {
+	order, err := o.queries.GetOrderForUpdate(ctx, number)
+	if err != nil {
+		return model.Order{}, err
+	}
+
+	return model.Order{
+		Number:     order.Number,
+		Username:   order.Username,
+		Status:     model.NewOrderStatus(order.Status),
+		Accrual:    int(order.Accrual),
+		UploadedAt: order.UploadedAt.Time,
+	}, nil
 }
 
 func (o Orders) CreateOrder(ctx context.Context, order model.Order) error {
-	//TODO implement me
-	panic("implement me")
+	err := o.queries.CreateOrder(ctx, db.CreateOrderParams{
+		Number:   order.Number,
+		Username: order.Username,
+		Status:   string(order.Status),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (o Orders) UpdateOrder(ctx context.Context, order model.Order) error {
-	//TODO implement me
-	panic("implement me")
+	if err := o.queries.UpdateOrder(ctx, db.UpdateOrderParams{
+		Status:   string(order.Status),
+		Accrual:  int32(order.Accrual),
+		Number:   order.Number,
+		Username: order.Username,
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (o Orders) AllOrders(ctx context.Context) ([]model.Order, error) {
-	//TODO implement me
-	panic("implement me")
+	orders, err := o.queries.AllOrders(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return utils.Map(orders, func(item db.Order) model.Order {
+		return model.Order{
+			Number:     item.Number,
+			Username:   item.Username,
+			Status:     model.NewOrderStatus(item.Status),
+			Accrual:    int(item.Accrual),
+			UploadedAt: item.UploadedAt.Time,
+		}
+	}), nil
 }

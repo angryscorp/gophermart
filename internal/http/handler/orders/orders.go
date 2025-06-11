@@ -17,7 +17,7 @@ func New(usecase usecase.Orders) Orders {
 }
 
 func (r Orders) UploadOrder(c *gin.Context) {
-	err := r.usecase.UploadOrder(c, "orderNumber")
+	err := r.usecase.UploadOrder(c, "orderNumber", "username")
 	if err != nil {
 		c.JSON(500, "Something went wrong")
 		return

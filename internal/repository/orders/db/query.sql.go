@@ -9,13 +9,112 @@ import (
 	"context"
 )
 
-const dummy = `-- name: Dummy :one
-SELECT 1 FROM users
+const allOrders = `-- name: AllOrders :many
+SELECT
+    number, username, status, accrual, uploaded_at
+FROM
+    orders
 `
 
-func (q *Queries) Dummy(ctx context.Context) (int32, error) {
-	row := q.db.QueryRow(ctx, dummy)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+func (q *Queries) AllOrders(ctx context.Context) ([]Order, error) {
+	rows, err := q.db.Query(ctx, allOrders)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.Number,
+			&i.Username,
+			&i.Status,
+			&i.Accrual,
+			&i.UploadedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const createOrder = `-- name: CreateOrder :exec
+INSERT INTO orders (
+    number,
+    username,
+    status,
+    accrual,
+    uploaded_at
+) VALUES (
+    $1,
+    $2,
+    $3,
+    0,
+    NOW()
+)
+`
+
+type CreateOrderParams struct {
+	Number   string
+	Username string
+	Status   string
+}
+
+func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) error {
+	_, err := q.db.Exec(ctx, createOrder, arg.Number, arg.Username, arg.Status)
+	return err
+}
+
+const getOrderForUpdate = `-- name: GetOrderForUpdate :one
+SELECT
+    number, username, status, accrual, uploaded_at
+FROM
+    orders
+WHERE
+    number == $1
+FOR UPDATE
+`
+
+func (q *Queries) GetOrderForUpdate(ctx context.Context, number string) (Order, error) {
+	row := q.db.QueryRow(ctx, getOrderForUpdate, number)
+	var i Order
+	err := row.Scan(
+		&i.Number,
+		&i.Username,
+		&i.Status,
+		&i.Accrual,
+		&i.UploadedAt,
+	)
+	return i, err
+}
+
+const updateOrder = `-- name: UpdateOrder :exec
+UPDATE orders
+SET
+    status = $1,
+    accrual = $2
+WHERE
+    number = $3 AND
+    username = $4
+`
+
+type UpdateOrderParams struct {
+	Status   string
+	Accrual  int32
+	Number   string
+	Username string
+}
+
+func (q *Queries) UpdateOrder(ctx context.Context, arg UpdateOrderParams) error {
+	_, err := q.db.Exec(ctx, updateOrder,
+		arg.Status,
+		arg.Accrual,
+		arg.Number,
+		arg.Username,
+	)
+	return err
 }

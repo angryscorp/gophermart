@@ -38,8 +38,8 @@ func New(
 	return orders
 }
 
-func (o Orders) UploadOrder(ctx context.Context, orderNumber string) error {
-	err := o.repository.CreateOrder(ctx, model.NewOrder(orderNumber))
+func (o Orders) UploadOrder(ctx context.Context, orderNumber, username string) error {
+	err := o.repository.CreateOrder(ctx, model.NewOrder(orderNumber, username))
 	if err != nil {
 		return err
 	}

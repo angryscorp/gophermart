@@ -6,6 +6,6 @@ import (
 )
 
 type Orders interface {
-	UploadOrder(ctx context.Context, orderNumber string) error
+	UploadOrder(ctx context.Context, orderNumber, username string) error
 	AllOrders(ctx context.Context) ([]model.Order, error)
 }
