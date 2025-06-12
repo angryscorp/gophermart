@@ -2,6 +2,8 @@ package orders
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/angryscorp/gophermart/internal/domain/model"
 	"github.com/angryscorp/gophermart/internal/domain/repository"
@@ -25,13 +27,16 @@ func New(dsn string) (*Orders, error) {
 	return &Orders{queries: db.New(pool)}, nil
 }
 
-func (o Orders) OrderInfoForUpdate(ctx context.Context, number string) (model.Order, error) {
+func (o Orders) OrderInfoForUpdate(ctx context.Context, number string) (*model.Order, error) {
 	order, err := o.queries.GetOrderForUpdate(ctx, number)
 	if err != nil {
-		return model.Order{}, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
 	}
 
-	return model.Order{
+	return &model.Order{
 		Number:     order.Number,
 		Username:   order.Username,
 		Status:     model.NewOrderStatus(order.Status),

@@ -2,6 +2,7 @@ package orders
 
 import (
 	"context"
+	"errors"
 	"github.com/angryscorp/gophermart/internal/domain/model"
 	"github.com/angryscorp/gophermart/internal/domain/repository"
 	"github.com/angryscorp/gophermart/internal/domain/usecase"
@@ -39,7 +40,20 @@ func New(
 }
 
 func (o Orders) UploadOrder(ctx context.Context, orderNumber, username string) error {
-	err := o.repository.CreateOrder(ctx, model.NewOrder(orderNumber, username))
+	order, err := o.repository.OrderInfoForUpdate(ctx, orderNumber)
+	if err != nil {
+		return err
+	}
+
+	if order != nil {
+		if order.Username == username {
+			return errors.New("order already uploaded by this user")
+		} else {
+			return errors.New("order already uploaded by another user")
+		}
+	}
+
+	err = o.repository.CreateOrder(ctx, model.NewOrder(orderNumber, username))
 	if err != nil {
 		return err
 	}
