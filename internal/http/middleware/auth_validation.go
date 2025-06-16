@@ -22,6 +22,9 @@ func AuthValidation() gin.HandlerFunc {
 			return
 		}
 
+		// TODO
+		c.Set("username", "username")
+
 		c.Next()
 	}
 }

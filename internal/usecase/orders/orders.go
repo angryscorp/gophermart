@@ -2,10 +2,10 @@ package orders
 
 import (
 	"context"
-	"errors"
 	"github.com/angryscorp/gophermart/internal/domain/model"
 	"github.com/angryscorp/gophermart/internal/domain/repository"
 	"github.com/angryscorp/gophermart/internal/domain/usecase"
+	"github.com/angryscorp/gophermart/internal/utils"
 	"github.com/rs/zerolog"
 	"time"
 )
@@ -40,22 +40,35 @@ func New(
 }
 
 func (o Orders) UploadOrder(ctx context.Context, orderNumber, username string) error {
+	if orderNumber == "" {
+		return usecase.ErrOrderNumberIsInvalid
+	}
+
+	// TODO: Only digits is allowed
+
+	numberIsValid := utils.CheckLuhn(orderNumber)
+	if !numberIsValid {
+		return usecase.ErrOrderNumberIsInvalid
+	}
+
 	order, err := o.repository.OrderInfoForUpdate(ctx, orderNumber)
 	if err != nil {
-		return err
+		o.logger.Error().Err(err).Msg("failed to get order info")
+		return model.ErrUnknownInternalError
 	}
 
 	if order != nil {
 		if order.Username == username {
-			return errors.New("order already uploaded by this user")
+			return usecase.ErrOrderIsAlreadyUploaded
 		} else {
-			return errors.New("order already uploaded by another user")
+			return usecase.ErrOrderWasUploadedAnotherUser
 		}
 	}
 
 	err = o.repository.CreateOrder(ctx, model.NewOrder(orderNumber, username))
 	if err != nil {
-		return err
+		o.logger.Error().Err(err).Msg("failed to create order")
+		return model.ErrUnknownInternalError
 	}
 
 	o.requestChan <- orderNumber

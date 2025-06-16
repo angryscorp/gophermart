@@ -14,6 +14,8 @@ SELECT
     number, username, status, accrual, uploaded_at
 FROM
     orders
+ORDER BY
+    uploaded_at DESC
 `
 
 func (q *Queries) AllOrders(ctx context.Context) ([]Order, error) {

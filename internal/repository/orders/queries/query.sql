@@ -26,7 +26,9 @@ INSERT INTO orders (
 SELECT
     *
 FROM
-    orders;
+    orders
+ORDER BY
+    uploaded_at DESC;
 
 -- name: UpdateOrder :exec
 UPDATE orders
