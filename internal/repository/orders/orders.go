@@ -38,7 +38,7 @@ func (o Orders) OrderInfoForUpdate(ctx context.Context, number string) (*model.O
 
 	return &model.Order{
 		Number:     order.Number,
-		UserId:     order.UserID,
+		UserID:     order.UserID,
 		Status:     model.NewOrderStatus(order.Status),
 		Accrual:    int(order.Accrual),
 		UploadedAt: order.UploadedAt.Time,
@@ -48,7 +48,7 @@ func (o Orders) OrderInfoForUpdate(ctx context.Context, number string) (*model.O
 func (o Orders) CreateOrder(ctx context.Context, order model.Order) error {
 	err := o.queries.CreateOrder(ctx, db.CreateOrderParams{
 		Number: order.Number,
-		UserID: order.UserId,
+		UserID: order.UserID,
 		Status: string(order.Status),
 	})
 	if err != nil {
@@ -63,7 +63,7 @@ func (o Orders) UpdateOrder(ctx context.Context, order model.Order) error {
 		Status:  string(order.Status),
 		Accrual: int32(order.Accrual),
 		Number:  order.Number,
-		UserID:  order.UserId,
+		UserID:  order.UserID,
 	}); err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (o Orders) AllOrders(ctx context.Context) ([]model.Order, error) {
 	return utils.Map(orders, func(item db.Order) model.Order {
 		return model.Order{
 			Number:     item.Number,
-			UserId:     item.UserID,
+			UserID:     item.UserID,
 			Status:     model.NewOrderStatus(item.Status),
 			Accrual:    int(item.Accrual),
 			UploadedAt: item.UploadedAt.Time,

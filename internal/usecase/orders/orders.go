@@ -40,12 +40,10 @@ func New(
 	return orders
 }
 
-func (o Orders) UploadOrder(ctx context.Context, orderNumber string, userId uuid.UUID) error {
+func (o Orders) UploadOrder(ctx context.Context, orderNumber string, userID uuid.UUID) error {
 	if orderNumber == "" {
 		return usecase.ErrOrderNumberIsInvalid
 	}
-
-	// TODO: Only digits is allowed
 
 	numberIsValid := utils.CheckLuhn(orderNumber)
 	if !numberIsValid {
@@ -59,14 +57,14 @@ func (o Orders) UploadOrder(ctx context.Context, orderNumber string, userId uuid
 	}
 
 	if order != nil {
-		if order.UserId == userId {
+		if order.UserID == userID {
 			return usecase.ErrOrderIsAlreadyUploaded
 		} else {
 			return usecase.ErrOrderWasUploadedAnotherUser
 		}
 	}
 
-	err = o.repository.CreateOrder(ctx, model.NewOrder(orderNumber, userId))
+	err = o.repository.CreateOrder(ctx, model.NewOrder(orderNumber, userID))
 	if err != nil {
 		o.logger.Error().Err(err).Msg("failed to create order")
 		return model.ErrUnknownInternalError
