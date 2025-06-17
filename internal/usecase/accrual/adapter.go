@@ -2,10 +2,10 @@ package accrual
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/angryscorp/gophermart/internal/domain/model"
 	"github.com/angryscorp/gophermart/internal/domain/usecase"
 	"github.com/rs/zerolog"
-	"io"
 	"net/http"
 	"strings"
 )
@@ -46,13 +46,15 @@ func (a Adapter) Status(orderNumber string) (model.Accrual, error) {
 		a.logger.Error().Err(err).Str("order", orderNumber).Msg("failed to get accrual info")
 		return model.Accrual{}, err
 	}
-	defer func(body io.ReadCloser) {
-		_ = body.Close()
-	}(resp.Body)
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			a.logger.Error().Err(err).Msg("failed to close response body")
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		a.logger.Error().Int("status", resp.StatusCode).Str("order", orderNumber).Msg("non-200 response from accrual service")
-		return model.Accrual{}, err
+		return model.Accrual{}, fmt.Errorf("accrual service returned status %d", resp.StatusCode)
 	}
 
 	var accrualResp model.Accrual
@@ -65,6 +67,7 @@ func (a Adapter) Status(orderNumber string) (model.Accrual, error) {
 	if accrualResp.Accrual != nil {
 		accrualValue = *accrualResp.Accrual
 	}
+
 	a.logger.Info().Str("order", orderNumber).Str("status", string(accrualResp.Status)).Int("accrual", accrualValue).Msg("accrual info received")
 
 	return accrualResp, nil
