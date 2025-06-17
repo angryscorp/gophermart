@@ -3,15 +3,19 @@ package users
 import (
 	"context"
 	"fmt"
+	"github.com/angryscorp/gophermart/internal/domain/model"
 	"github.com/angryscorp/gophermart/internal/domain/repository"
 	"github.com/angryscorp/gophermart/internal/repository/common"
 	"github.com/angryscorp/gophermart/internal/repository/users/db"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pkg/errors"
 )
 
 type Users struct {
 	queries *db.Queries
+	pool    *pgxpool.Pool
 }
 
 var _ repository.Users = (*Users)(nil)
@@ -22,31 +26,59 @@ func New(dsn string) (*Users, error) {
 		return nil, fmt.Errorf("failed to create pool: %w", err)
 	}
 
-	return &Users{queries: db.New(pool)}, nil
+	return &Users{
+		queries: db.New(pool),
+		pool:    pool,
+	}, nil
 }
 
-func (r Users) CreateUser(ctx context.Context, username, passwordHash string) error {
-	if err := r.queries.CreateUser(ctx, db.CreateUserParams{
+func (r Users) CreateUser(ctx context.Context, username, passwordHash string) (*uuid.UUID, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func(tx pgx.Tx, ctx context.Context) {
+		_ = tx.Rollback(ctx)
+	}(tx, ctx)
+
+	qtx := r.queries.WithTx(tx)
+
+	isExist, err := qtx.CheckUsername(ctx, username)
+	if err != nil {
+		return nil, err
+	}
+
+	if isExist {
+		return nil, model.ErrUserIsAlreadyExist
+	}
+
+	newID := uuid.New()
+	if err := qtx.CreateUser(ctx, db.CreateUserParams{
+		ID:           newID,
 		Username:     username,
 		PasswordHash: passwordHash,
 	}); err != nil {
-		return errors.Wrap(repository.ErrInvalidCredentials, err.Error())
+		return nil, errors.Wrap(model.ErrUnknownInternalError, err.Error())
 	}
 
-	return nil
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return &newID, nil
 }
 
-func (r Users) CheckUser(ctx context.Context, username, passwordHash string) error {
-	_, err := r.queries.CheckUser(ctx, db.CheckUserParams{
+func (r Users) CheckUser(ctx context.Context, username, passwordHash string) (*uuid.UUID, error) {
+	id, err := r.queries.CheckUser(ctx, db.CheckUserParams{
 		Username:     username,
 		PasswordHash: passwordHash,
 	})
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		return repository.ErrInvalidCredentials
+		return nil, nil
 	} else if err != nil {
-		return errors.Wrap(repository.ErrUnknownInternalError, err.Error())
+		return nil, nil
 	}
 
-	return nil
+	return &id, nil
 }

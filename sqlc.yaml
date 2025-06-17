@@ -8,6 +8,10 @@ sql:
         package: "db"
         out: "./internal/repository/users/db"
         sql_package: "pgx/v5"
+        omit_unused_structs: true
+        overrides:
+          - db_type: "uuid"
+            go_type: "github.com/google/uuid.UUID"
 
   - engine: "postgresql"
     queries: "./internal/repository/orders/queries"
@@ -17,6 +21,7 @@ sql:
         package: "db"
         out: "./internal/repository/orders/db"
         sql_package: "pgx/v5"
+        omit_unused_structs: true
 
   - engine: "postgresql"
     queries: "./internal/repository/balance/queries"
@@ -26,3 +31,4 @@ sql:
         package: "db"
         out: "./internal/repository/balance/db"
         sql_package: "pgx/v5"
+        omit_unused_structs: true

@@ -15,8 +15,3 @@ type Order struct {
 	Accrual    int32
 	UploadedAt pgtype.Timestamp
 }
-
-type User struct {
-	Username     string
-	PasswordHash string
-}

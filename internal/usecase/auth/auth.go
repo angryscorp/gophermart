@@ -21,24 +21,24 @@ var _ usecase.Auth = (*Auth)(nil)
 
 func (a Auth) SignUp(ctx context.Context, username, password string) (string, error) {
 	passwordHash := password // TODO
-	err := a.repository.CreateUser(ctx, username, passwordHash)
+	id, err := a.repository.CreateUser(ctx, username, passwordHash)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to create user")
 	}
 
-	token := "secret_token" // TODO
+	token := *id // TODO
 
-	return token, nil
+	return token.String(), nil
 }
 
 func (a Auth) SignIn(ctx context.Context, username, password string) (string, error) {
 	passwordHash := password // TODO
-	err := a.repository.CheckUser(ctx, username, passwordHash)
+	id, err := a.repository.CheckUser(ctx, username, passwordHash)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to login")
 	}
 
-	token := "secret_token" // TODO
+	token := *id // TODO
 
-	return token, nil
+	return token.String(), nil
 }

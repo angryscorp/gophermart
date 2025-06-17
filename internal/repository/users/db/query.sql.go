@@ -7,10 +7,12 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const checkUser = `-- name: CheckUser :one
-SELECT 1 FROM users
+SELECT id FROM users
 WHERE username = $1 AND password_hash = $2
 `
 
@@ -19,24 +21,39 @@ type CheckUserParams struct {
 	PasswordHash string
 }
 
-func (q *Queries) CheckUser(ctx context.Context, arg CheckUserParams) (int32, error) {
+func (q *Queries) CheckUser(ctx context.Context, arg CheckUserParams) (uuid.UUID, error) {
 	row := q.db.QueryRow(ctx, checkUser, arg.Username, arg.PasswordHash)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const checkUsername = `-- name: CheckUsername :one
+SELECT EXISTS(
+    SELECT 1 FROM users
+    WHERE username = $1
+) AS user_exists
+`
+
+func (q *Queries) CheckUsername(ctx context.Context, username string) (bool, error) {
+	row := q.db.QueryRow(ctx, checkUsername, username)
+	var user_exists bool
+	err := row.Scan(&user_exists)
+	return user_exists, err
 }
 
 const createUser = `-- name: CreateUser :exec
-INSERT INTO users (username, password_hash)
-VALUES ($1, $2)
+INSERT INTO users (id, username, password_hash)
+VALUES ($1, $2, $3)
 `
 
 type CreateUserParams struct {
+	ID           uuid.UUID
 	Username     string
 	PasswordHash string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.Exec(ctx, createUser, arg.Username, arg.PasswordHash)
+	_, err := q.db.Exec(ctx, createUser, arg.ID, arg.Username, arg.PasswordHash)
 	return err
 }

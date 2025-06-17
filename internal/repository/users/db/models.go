@@ -3,20 +3,3 @@
 //   sqlc v1.29.0
 
 package db
-
-import (
-	"github.com/jackc/pgx/v5/pgtype"
-)
-
-type Order struct {
-	Number     string
-	Username   string
-	Status     string
-	Accrual    int32
-	UploadedAt pgtype.Timestamp
-}
-
-type User struct {
-	Username     string
-	PasswordHash string
-}

@@ -8,4 +8,5 @@ const (
 	ErrWrongRequestFormat     Error = "wrong request format"
 	ErrUnknownInternalError   Error = "unknown internal error"
 	ErrUserIsNotAuthenticated Error = "user is not authenticated"
+	ErrUserIsAlreadyExist     Error = "user is already exist"
 )
