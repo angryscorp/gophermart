@@ -7,11 +7,13 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const allOrders = `-- name: AllOrders :many
 SELECT
-    number, username, status, accrual, uploaded_at
+    number, status, accrual, uploaded_at, user_id
 FROM
     orders
 ORDER BY
@@ -29,10 +31,10 @@ func (q *Queries) AllOrders(ctx context.Context) ([]Order, error) {
 		var i Order
 		if err := rows.Scan(
 			&i.Number,
-			&i.Username,
 			&i.Status,
 			&i.Accrual,
 			&i.UploadedAt,
+			&i.UserID,
 		); err != nil {
 			return nil, err
 		}
@@ -47,7 +49,7 @@ func (q *Queries) AllOrders(ctx context.Context) ([]Order, error) {
 const createOrder = `-- name: CreateOrder :exec
 INSERT INTO orders (
     number,
-    username,
+    user_id,
     status,
     accrual,
     uploaded_at
@@ -61,19 +63,19 @@ INSERT INTO orders (
 `
 
 type CreateOrderParams struct {
-	Number   string
-	Username string
-	Status   string
+	Number string
+	UserID uuid.UUID
+	Status string
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) error {
-	_, err := q.db.Exec(ctx, createOrder, arg.Number, arg.Username, arg.Status)
+	_, err := q.db.Exec(ctx, createOrder, arg.Number, arg.UserID, arg.Status)
 	return err
 }
 
 const getOrderForUpdate = `-- name: GetOrderForUpdate :one
 SELECT
-    number, username, status, accrual, uploaded_at
+    number, status, accrual, uploaded_at, user_id
 FROM
     orders
 WHERE
@@ -86,10 +88,10 @@ func (q *Queries) GetOrderForUpdate(ctx context.Context, number string) (Order, 
 	var i Order
 	err := row.Scan(
 		&i.Number,
-		&i.Username,
 		&i.Status,
 		&i.Accrual,
 		&i.UploadedAt,
+		&i.UserID,
 	)
 	return i, err
 }
@@ -101,14 +103,14 @@ SET
     accrual = $2
 WHERE
     number = $3 AND
-    username = $4
+    user_id = $4
 `
 
 type UpdateOrderParams struct {
-	Status   string
-	Accrual  int32
-	Number   string
-	Username string
+	Status  string
+	Accrual int32
+	Number  string
+	UserID  uuid.UUID
 }
 
 func (q *Queries) UpdateOrder(ctx context.Context, arg UpdateOrderParams) error {
@@ -116,7 +118,7 @@ func (q *Queries) UpdateOrder(ctx context.Context, arg UpdateOrderParams) error 
 		arg.Status,
 		arg.Accrual,
 		arg.Number,
-		arg.Username,
+		arg.UserID,
 	)
 	return err
 }

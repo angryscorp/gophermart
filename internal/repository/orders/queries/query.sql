@@ -10,13 +10,13 @@ FOR UPDATE;
 -- name: CreateOrder :exec
 INSERT INTO orders (
     number,
-    username,
+    user_id,
     status,
     accrual,
     uploaded_at
 ) VALUES (
     @number,
-    @username,
+    @user_id,
     @status,
     0,
     NOW()
@@ -37,4 +37,4 @@ SET
     accrual = @accrual
 WHERE
     number = @number AND
-    username = @username;
+    user_id = @user_id;

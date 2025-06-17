@@ -5,6 +5,7 @@ import (
 	"github.com/angryscorp/gophermart/internal/domain/usecase"
 	"github.com/angryscorp/gophermart/internal/http/router"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"strings"
 )
 
@@ -28,21 +29,21 @@ func (r Orders) UploadOrder(c *gin.Context) {
 
 	orderNumber := strings.TrimSpace(string(orderNumberBytes))
 
-	// Username
-	username, exists := c.Get("username")
+	// userId
+	userId, exists := c.Get("userId")
 	if !exists {
 		c.JSON(500, "Something went wrong")
 		return
 	}
 
-	usernameStr, ok := username.(string)
+	userUUID, ok := userId.(uuid.UUID)
 	if !ok {
 		c.JSON(500, "Internal server error")
 		return
 	}
 
 	// Mail logic
-	err = r.usecase.UploadOrder(c, orderNumber, usernameStr)
+	err = r.usecase.UploadOrder(c, orderNumber, userUUID)
 
 	switch {
 	case errors.Is(err, usecase.ErrOrderIsAlreadyUploaded):

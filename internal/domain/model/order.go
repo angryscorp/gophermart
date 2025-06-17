@@ -1,19 +1,22 @@
 package model
 
-import "time"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
 type Order struct {
 	Number     string      `json:"number"`
-	Username   string      `json:"username"`
+	UserId     uuid.UUID   `json:"-"`
 	Status     OrderStatus `json:"status"`
 	Accrual    int         `json:"accrual"`
 	UploadedAt time.Time   `json:"uploaded_at"`
 }
 
-func NewOrder(number, username string) Order {
+func NewOrder(number string, userId uuid.UUID) Order {
 	return Order{
-		Number:   number,
-		Username: username,
-		Status:   OrderStatusNew,
+		Number: number,
+		UserId: userId,
+		Status: OrderStatusNew,
 	}
 }

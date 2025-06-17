@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/angryscorp/gophermart/internal/domain/model"
+	"github.com/google/uuid"
 )
 
 const (
@@ -12,6 +13,6 @@ const (
 )
 
 type Orders interface {
-	UploadOrder(ctx context.Context, orderNumber, username string) error
+	UploadOrder(ctx context.Context, orderNumber string, userId uuid.UUID) error
 	AllOrders(ctx context.Context) ([]model.Order, error)
 }

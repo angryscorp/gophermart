@@ -5,13 +5,14 @@
 package db
 
 import (
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Order struct {
 	Number     string
-	Username   string
 	Status     string
 	Accrual    int32
 	UploadedAt pgtype.Timestamp
+	UserID     uuid.UUID
 }

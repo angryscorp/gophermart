@@ -23,12 +23,12 @@ func AuthValidation() gin.HandlerFunc {
 		}
 
 		// TODO
-		c.Set("username", "username")
+		c.Set("userId", token)
 
 		c.Next()
 	}
 }
 
 func isValidToken(token string) bool {
-	return token == "secret_token" // TODO
+	return true // TODO
 }

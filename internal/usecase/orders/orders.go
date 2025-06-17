@@ -6,6 +6,7 @@ import (
 	"github.com/angryscorp/gophermart/internal/domain/repository"
 	"github.com/angryscorp/gophermart/internal/domain/usecase"
 	"github.com/angryscorp/gophermart/internal/utils"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"time"
 )
@@ -39,7 +40,7 @@ func New(
 	return orders
 }
 
-func (o Orders) UploadOrder(ctx context.Context, orderNumber, username string) error {
+func (o Orders) UploadOrder(ctx context.Context, orderNumber string, userId uuid.UUID) error {
 	if orderNumber == "" {
 		return usecase.ErrOrderNumberIsInvalid
 	}
@@ -58,14 +59,14 @@ func (o Orders) UploadOrder(ctx context.Context, orderNumber, username string) e
 	}
 
 	if order != nil {
-		if order.Username == username {
+		if order.UserId == userId {
 			return usecase.ErrOrderIsAlreadyUploaded
 		} else {
 			return usecase.ErrOrderWasUploadedAnotherUser
 		}
 	}
 
-	err = o.repository.CreateOrder(ctx, model.NewOrder(orderNumber, username))
+	err = o.repository.CreateOrder(ctx, model.NewOrder(orderNumber, userId))
 	if err != nil {
 		o.logger.Error().Err(err).Msg("failed to create order")
 		return model.ErrUnknownInternalError
