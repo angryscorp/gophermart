@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/angryscorp/gophermart/internal/domain/usecase"
 	"github.com/angryscorp/gophermart/internal/http/logger"
 	"github.com/angryscorp/gophermart/internal/http/middleware"
 	"github.com/gin-gonic/gin"
@@ -8,17 +9,22 @@ import (
 )
 
 type Router struct {
-	engine *gin.Engine
+	engine         *gin.Engine
+	tokenValidator usecase.TokenValidator
 }
 
-func New(zeroLogger zerolog.Logger) Router {
+func New(
+	zeroLogger zerolog.Logger,
+	tokenValidator usecase.TokenValidator,
+) Router {
 	engine := gin.New()
 	engine.
 		Use(logger.New(zeroLogger)).
 		Use(gin.Recovery())
 
 	return Router{
-		engine: engine,
+		engine:         engine,
+		tokenValidator: tokenValidator,
 	}
 }
 
@@ -32,12 +38,12 @@ func (r Router) RegisterAuth(auth AuthHandler) {
 }
 
 func (r Router) RegisterOrders(orders OrdersHandler) {
-	r.engine.POST("/api/user/orders", middleware.AuthValidation(), orders.UploadOrder)
-	r.engine.GET("/api/user/orders", middleware.AuthValidation(), orders.AllOrders)
+	r.engine.POST("/api/user/orders", middleware.AuthValidation(r.tokenValidator), orders.UploadOrder)
+	r.engine.GET("/api/user/orders", middleware.AuthValidation(r.tokenValidator), orders.AllOrders)
 }
 
 func (r Router) RegisterBalance(balance BalanceHandler) {
-	r.engine.GET("/api/user/balance", middleware.AuthValidation(), balance.Balance)
-	r.engine.POST("/api/user/balance/withdraw", middleware.AuthValidation(), balance.Withdraw)
-	r.engine.GET("/api/user/withdrawals", middleware.AuthValidation(), balance.AllWithdrawals)
+	r.engine.GET("/api/user/balance", middleware.AuthValidation(r.tokenValidator), balance.Balance)
+	r.engine.POST("/api/user/balance/withdraw", middleware.AuthValidation(r.tokenValidator), balance.Withdraw)
+	r.engine.GET("/api/user/withdrawals", middleware.AuthValidation(r.tokenValidator), balance.AllWithdrawals)
 }

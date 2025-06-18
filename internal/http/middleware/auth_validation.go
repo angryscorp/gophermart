@@ -1,34 +1,32 @@
 package middleware
 
 import (
+	"github.com/angryscorp/gophermart/internal/domain/usecase"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
 )
 
-func AuthValidation() gin.HandlerFunc {
+func AuthValidation(
+	tokenValidator usecase.TokenValidator,
+) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.GetHeader("Authorization")
-		if token == "" {
+		tokenStr := c.GetHeader("Authorization")
+		if tokenStr == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
 			c.Abort()
 			return
 		}
 
-		token = strings.TrimPrefix(token, "Bearer ")
-		if !isValidToken(token) {
+		tokenStr = strings.TrimPrefix(tokenStr, "Bearer ")
+		token, err := tokenValidator.Validate(tokenStr)
+		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
 		}
 
-		// TODO
-		c.Set("userId", token)
-
+		c.Set("userID", token.UserID)
 		c.Next()
 	}
-}
-
-func isValidToken(token string) bool {
-	return true // TODO
 }

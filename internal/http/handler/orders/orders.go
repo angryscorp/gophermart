@@ -30,7 +30,7 @@ func (r Orders) UploadOrder(c *gin.Context) {
 	orderNumber := strings.TrimSpace(string(orderNumberBytes))
 
 	// userID
-	userID, exists := c.Get("userId")
+	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(500, "Something went wrong")
 		return

@@ -62,14 +62,14 @@ func main() {
 	responseChan := make(chan model.Accrual)
 
 	accrualAdapter := accrual.NewAdapter(&http.Client{}, zeroLogger, cfg.AccrualAddress)
-	accrualWorker := accrual.NewWorker(accrualAdapter, 10, requestChan, responseChan)
+	accrualWorker := accrual.NewWorker(accrualAdapter, 10, requestChan, responseChan) // TODO
 	accrualWorker.Run()
 
-	authUsecase := auth.New(usersRepository)
+	authUsecase := auth.New(usersRepository, "secret") // TODO
 	ordersUsecase := orders.New(ordersRepository, requestChan, responseChan, zeroLogger)
 	balanceUsecase := balance.New(balanceRepository)
 
-	r := router.New(zeroLogger)
+	r := router.New(zeroLogger, authUsecase)
 	r.RegisterAuth(handlerAuth.New(authUsecase))
 	r.RegisterOrders(handlerOrders.New(ordersUsecase))
 	r.RegisterBalance(handlerBalance.New(balanceUsecase))
