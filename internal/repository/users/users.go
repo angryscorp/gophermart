@@ -68,17 +68,15 @@ func (r Users) CreateUser(ctx context.Context, username, passwordHash string) (*
 	return &newID, nil
 }
 
-func (r Users) CheckUser(ctx context.Context, username, passwordHash string) (*uuid.UUID, error) {
-	id, err := r.queries.CheckUser(ctx, db.CheckUserParams{
-		Username:     username,
-		PasswordHash: passwordHash,
-	})
-
-	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, nil
-	} else if err != nil {
-		return nil, nil
+func (r Users) UserData(ctx context.Context, username string) (*model.User, error) {
+	userData, err := r.queries.UserByUsername(ctx, username)
+	if err != nil {
+		return nil, err
 	}
 
-	return &id, nil
+	return &model.User{
+		ID:           userData.ID,
+		Username:     userData.Username,
+		PasswordHash: userData.PasswordHash,
+	}, nil
 }

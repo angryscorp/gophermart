@@ -7,16 +7,16 @@ import (
 	"github.com/angryscorp/gophermart/internal/domain/usecase"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 )
+
+const tokenTTL = 24 * time.Hour
 
 type Auth struct {
 	repository repository.Users
 	jwtSecret  []byte
 }
-
-var _ usecase.Auth = (*Auth)(nil)
-var _ usecase.TokenValidator = (*Auth)(nil)
 
 func New(
 	repository repository.Users,
@@ -28,37 +28,36 @@ func New(
 	}
 }
 
+var _ usecase.Auth = (*Auth)(nil)
+
 func (a Auth) SignUp(ctx context.Context, username, password string) (string, error) {
-	passwordHash := password // TODO
-	id, err := a.repository.CreateUser(ctx, username, passwordHash)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to hash password")
+	}
+
+	id, err := a.repository.CreateUser(ctx, username, string(passwordHash))
 	if err != nil {
 		return "", errors.Wrap(err, "failed to create user")
 	}
 
-	token, err := a.generateToken(id.String())
-	if err != nil {
-		return "", errors.Wrap(err, "failed to generate token")
-	}
-
-	return token, nil
-
+	return a.generateToken(id.String())
 }
 
 func (a Auth) SignIn(ctx context.Context, username, password string) (string, error) {
-	passwordHash := password // TODO
-	id, err := a.repository.CheckUser(ctx, username, passwordHash)
+	user, err := a.repository.UserData(ctx, username)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to login")
 	}
 
-	token, err := a.generateToken(id.String())
-	if err != nil {
-		return "", errors.Wrap(err, "failed to generate token")
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		return "", errors.New("invalid credentials")
 	}
 
-	return token, nil
-
+	return a.generateToken(user.ID.String())
 }
+
+var _ usecase.TokenValidator = (*Auth)(nil)
 
 func (a Auth) Validate(tokenString string) (*model.Token, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &model.Token{}, func(token *jwt.Token) (interface{}, error) {
@@ -80,7 +79,7 @@ func (a Auth) generateToken(userID string) (string, error) {
 	claims := model.Token{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}

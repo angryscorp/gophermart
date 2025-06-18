@@ -11,23 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-const checkUser = `-- name: CheckUser :one
-SELECT id FROM users
-WHERE username = $1 AND password_hash = $2
-`
-
-type CheckUserParams struct {
-	Username     string
-	PasswordHash string
-}
-
-func (q *Queries) CheckUser(ctx context.Context, arg CheckUserParams) (uuid.UUID, error) {
-	row := q.db.QueryRow(ctx, checkUser, arg.Username, arg.PasswordHash)
-	var id uuid.UUID
-	err := row.Scan(&id)
-	return id, err
-}
-
 const checkUsername = `-- name: CheckUsername :one
 SELECT EXISTS(
     SELECT 1 FROM users
@@ -56,4 +39,22 @@ type CreateUserParams struct {
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 	_, err := q.db.Exec(ctx, createUser, arg.ID, arg.Username, arg.PasswordHash)
 	return err
+}
+
+const userByUsername = `-- name: UserByUsername :one
+SELECT id, username, password_hash FROM users
+WHERE username = $1
+`
+
+type UserByUsernameRow struct {
+	ID           uuid.UUID
+	Username     string
+	PasswordHash string
+}
+
+func (q *Queries) UserByUsername(ctx context.Context, username string) (UserByUsernameRow, error) {
+	row := q.db.QueryRow(ctx, userByUsername, username)
+	var i UserByUsernameRow
+	err := row.Scan(&i.ID, &i.Username, &i.PasswordHash)
+	return i, err
 }
