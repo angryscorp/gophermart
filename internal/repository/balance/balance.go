@@ -1,10 +1,13 @@
 package balance
 
 import (
+	"context"
 	"fmt"
+	"github.com/angryscorp/gophermart/internal/domain/model"
 	"github.com/angryscorp/gophermart/internal/domain/repository"
 	"github.com/angryscorp/gophermart/internal/repository/balance/db"
 	"github.com/angryscorp/gophermart/internal/repository/common"
+	"github.com/google/uuid"
 )
 
 type Balance struct {
@@ -20,4 +23,19 @@ func New(dsn string) (*Balance, error) {
 	}
 
 	return &Balance{queries: db.New(pool)}, nil
+}
+
+func (b Balance) Balance(ctx context.Context, userID uuid.UUID) (repository.Balance, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (b Balance) Withdraw(ctx context.Context, userID uuid.UUID, orderID string, amount int) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (b Balance) WithdrawalHistory(ctx context.Context, userID uuid.UUID) ([]model.Withdrawal, error) {
+	//TODO implement me
+	panic("implement me")
 }

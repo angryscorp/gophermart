@@ -3,9 +3,9 @@ package orders
 import (
 	"errors"
 	"github.com/angryscorp/gophermart/internal/domain/usecase"
+	"github.com/angryscorp/gophermart/internal/http/handler/common"
 	"github.com/angryscorp/gophermart/internal/http/router"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"strings"
 )
 
@@ -30,7 +30,7 @@ func (r Orders) UploadOrder(c *gin.Context) {
 	orderNumber := strings.TrimSpace(string(orderNumberBytes))
 
 	// userID
-	userID, err := getUserID(c)
+	userID, err := common.GetUserID(c)
 	if err != nil {
 		c.JSON(500, "Internal server error")
 		return
@@ -59,7 +59,7 @@ func (r Orders) UploadOrder(c *gin.Context) {
 
 func (r Orders) AllOrders(c *gin.Context) {
 	// userID
-	userID, err := getUserID(c)
+	userID, err := common.GetUserID(c)
 	if err != nil {
 		c.JSON(500, "Internal server error")
 		return
@@ -78,18 +78,4 @@ func (r Orders) AllOrders(c *gin.Context) {
 	}
 
 	c.JSON(200, orders)
-}
-
-func getUserID(ctx *gin.Context) (*uuid.UUID, error) {
-	userID, exists := ctx.Get("userID")
-	if !exists {
-		return nil, errors.New("user is not authenticated")
-	}
-
-	userUUID, ok := userID.(uuid.UUID)
-	if !ok {
-		return nil, errors.New("invalid user ID")
-	}
-
-	return &userUUID, nil
 }

@@ -5,7 +5,8 @@ import (
 	"github.com/angryscorp/gophermart/internal/domain/model"
 	"github.com/angryscorp/gophermart/internal/domain/repository"
 	"github.com/angryscorp/gophermart/internal/domain/usecase"
-	"time"
+	"github.com/angryscorp/gophermart/internal/utils"
+	"github.com/google/uuid"
 )
 
 type Balance struct {
@@ -20,14 +21,25 @@ func New(repository repository.Balance) Balance {
 	}
 }
 
-func (b Balance) Balance(ctx context.Context) (model.Balance, error) {
+func (b Balance) Balance(ctx context.Context, userID uuid.UUID) (model.Balance, error) {
 	return model.Balance{Current: 123, Withdrawn: 45}, nil
 }
 
-func (b Balance) Withdraw(ctx context.Context, req model.WithdrawalRequest) error {
+func (b Balance) Withdraw(ctx context.Context, userID uuid.UUID, orderNumber string, amount int) error {
+	if orderNumber == "" {
+		return usecase.ErrOrderNumberIsInvalid
+	}
+
+	numberIsValid := utils.CheckLuhn(orderNumber)
+	if !numberIsValid {
+		return usecase.ErrOrderNumberIsInvalid
+	}
+
+	// ErrUnsufficientFunds
+
 	return nil
 }
 
-func (b Balance) AllWithdrawals(ctx context.Context) ([]model.Withdrawal, error) {
-	return []model.Withdrawal{{Order: "123", Sum: 456, ProcessedAt: time.Now()}}, nil
+func (b Balance) AllWithdrawals(ctx context.Context, userID uuid.UUID) ([]model.Withdrawal, error) {
+	return b.repository.WithdrawalHistory(ctx, userID)
 }
