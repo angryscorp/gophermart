@@ -27,6 +27,8 @@ SELECT
     *
 FROM
     orders
+WHERE
+    user_id = @user_id
 ORDER BY
     uploaded_at DESC;
 

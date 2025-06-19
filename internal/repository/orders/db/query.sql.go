@@ -16,12 +16,14 @@ SELECT
     number, status, accrual, uploaded_at, user_id
 FROM
     orders
+WHERE
+    user_id = $1
 ORDER BY
     uploaded_at DESC
 `
 
-func (q *Queries) AllOrders(ctx context.Context) ([]Order, error) {
-	rows, err := q.db.Query(ctx, allOrders)
+func (q *Queries) AllOrders(ctx context.Context, userID uuid.UUID) ([]Order, error) {
+	rows, err := q.db.Query(ctx, allOrders, userID)
 	if err != nil {
 		return nil, err
 	}

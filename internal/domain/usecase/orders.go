@@ -14,5 +14,5 @@ const (
 
 type Orders interface {
 	UploadOrder(ctx context.Context, orderNumber string, userID uuid.UUID) error
-	AllOrders(ctx context.Context) ([]model.Order, error)
+	AllOrders(ctx context.Context, userID uuid.UUID) ([]model.Order, error)
 }

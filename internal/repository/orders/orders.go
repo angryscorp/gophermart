@@ -10,6 +10,7 @@ import (
 	"github.com/angryscorp/gophermart/internal/repository/common"
 	"github.com/angryscorp/gophermart/internal/repository/orders/db"
 	"github.com/angryscorp/gophermart/internal/utils"
+	"github.com/google/uuid"
 )
 
 type Orders struct {
@@ -71,8 +72,8 @@ func (o Orders) UpdateOrder(ctx context.Context, order model.Order) error {
 	return nil
 }
 
-func (o Orders) AllOrders(ctx context.Context) ([]model.Order, error) {
-	orders, err := o.queries.AllOrders(ctx)
+func (o Orders) AllOrders(ctx context.Context, userID uuid.UUID) ([]model.Order, error) {
+	orders, err := o.queries.AllOrders(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

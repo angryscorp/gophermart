@@ -74,12 +74,8 @@ func (o Orders) UploadOrder(ctx context.Context, orderNumber string, userID uuid
 	return nil
 }
 
-func (o Orders) AllOrders(ctx context.Context) ([]model.Order, error) {
-	orders, err := o.repository.AllOrders(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return orders, nil
+func (o Orders) AllOrders(ctx context.Context, userID uuid.UUID) ([]model.Order, error) {
+	return o.repository.AllOrders(ctx, userID)
 }
 
 func (o Orders) listenResponses() {

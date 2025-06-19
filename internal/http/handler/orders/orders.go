@@ -30,20 +30,14 @@ func (r Orders) UploadOrder(c *gin.Context) {
 	orderNumber := strings.TrimSpace(string(orderNumberBytes))
 
 	// userID
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(500, "Something went wrong")
-		return
-	}
-
-	userUUID, ok := userID.(uuid.UUID)
-	if !ok {
+	userID, err := getUserID(c)
+	if err != nil {
 		c.JSON(500, "Internal server error")
 		return
 	}
 
 	// Mail logic
-	err = r.usecase.UploadOrder(c, orderNumber, userUUID)
+	err = r.usecase.UploadOrder(c, orderNumber, *userID)
 
 	switch {
 	case errors.Is(err, usecase.ErrOrderIsAlreadyUploaded):
@@ -64,7 +58,15 @@ func (r Orders) UploadOrder(c *gin.Context) {
 }
 
 func (r Orders) AllOrders(c *gin.Context) {
-	orders, err := r.usecase.AllOrders(c)
+	// userID
+	userID, err := getUserID(c)
+	if err != nil {
+		c.JSON(500, "Internal server error")
+		return
+	}
+
+	// Main logic
+	orders, err := r.usecase.AllOrders(c, *userID)
 	if err != nil {
 		c.JSON(500, "Internal server error")
 		return
@@ -76,4 +78,18 @@ func (r Orders) AllOrders(c *gin.Context) {
 	}
 
 	c.JSON(200, orders)
+}
+
+func getUserID(ctx *gin.Context) (*uuid.UUID, error) {
+	userID, exists := ctx.Get("userID")
+	if !exists {
+		return nil, errors.New("user is not authenticated")
+	}
+
+	userUUID, ok := userID.(uuid.UUID)
+	if !ok {
+		return nil, errors.New("invalid user ID")
+	}
+
+	return &userUUID, nil
 }
