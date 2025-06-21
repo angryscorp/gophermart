@@ -102,7 +102,7 @@ func (q *Queries) GetOrderForUpdate(ctx context.Context, number string) (Order, 
 const increaseBalance = `-- name: IncreaseBalance :exec
 UPDATE balances
 SET
-    balance = balance + orders.accrual
+    balance = balance + COALESCE(orders.accrual, 0)
 FROM
     orders
 WHERE
@@ -122,23 +122,16 @@ SET
     status = $1,
     accrual = $2
 WHERE
-    number = $3 AND
-    user_id = $4
+    number = $3
 `
 
 type UpdateOrderParams struct {
 	Status  string
 	Accrual pgtype.Numeric
 	Number  string
-	UserID  uuid.UUID
 }
 
 func (q *Queries) UpdateOrder(ctx context.Context, arg UpdateOrderParams) error {
-	_, err := q.db.Exec(ctx, updateOrder,
-		arg.Status,
-		arg.Accrual,
-		arg.Number,
-		arg.UserID,
-	)
+	_, err := q.db.Exec(ctx, updateOrder, arg.Status, arg.Accrual, arg.Number)
 	return err
 }

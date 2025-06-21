@@ -19,6 +19,6 @@ func (m mapper) NumericToFloat(value pgtype.Numeric) *float64 {
 
 func (m mapper) FloatToNumeric(value *float64) pgtype.Numeric {
 	v := pgtype.Numeric{}
-	_ = v.Scan(value)
+	_ = v.Scan(*value)
 	return v
 }

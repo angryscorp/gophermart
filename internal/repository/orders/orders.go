@@ -82,7 +82,6 @@ func (o Orders) UpdateOrder(ctx context.Context, order model.Order) error {
 		Status:  string(order.Status),
 		Accrual: mapper.Mapper.FloatToNumeric(order.Accrual),
 		Number:  order.Number,
-		UserID:  order.UserID,
 	}); err != nil {
 		return err
 	}

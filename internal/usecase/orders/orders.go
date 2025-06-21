@@ -80,8 +80,10 @@ func (o Orders) AllOrders(ctx context.Context, userID uuid.UUID) ([]model.Order,
 
 func (o Orders) listenResponses() {
 	for resp := range o.responseChan {
+		o.logger.Debug().Msgf("received response from accrual service: %+v", resp)
 		order := newOrder(resp)
 		if order != nil {
+			o.logger.Debug().Msgf("updating order: %+v", order)
 			err := o.repository.UpdateOrder(o.ctx, *order)
 			if err != nil {
 				o.logger.Error().Err(err).Msg("failed to update order")

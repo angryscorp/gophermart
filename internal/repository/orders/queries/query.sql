@@ -38,13 +38,12 @@ SET
     status = @status,
     accrual = @accrual
 WHERE
-    number = @number AND
-    user_id = @user_id;
+    number = @number;
 
 -- name: IncreaseBalance :exec
 UPDATE balances
 SET
-    balance = balance + orders.accrual
+    balance = balance + COALESCE(orders.accrual, 0)
 FROM
     orders
 WHERE
