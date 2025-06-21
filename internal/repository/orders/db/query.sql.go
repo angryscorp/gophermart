@@ -98,6 +98,23 @@ func (q *Queries) GetOrderForUpdate(ctx context.Context, number string) (Order, 
 	return i, err
 }
 
+const increaseBalance = `-- name: IncreaseBalance :exec
+UPDATE balances
+SET
+    balance = balance + orders.accrual
+FROM
+    orders
+WHERE
+    balances.user_id = orders.user_id
+  AND
+    orders.number = $1
+`
+
+func (q *Queries) IncreaseBalance(ctx context.Context, number string) error {
+	_, err := q.db.Exec(ctx, increaseBalance, number)
+	return err
+}
+
 const updateOrder = `-- name: UpdateOrder :exec
 UPDATE orders
 SET

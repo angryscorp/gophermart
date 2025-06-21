@@ -11,10 +11,13 @@ import (
 	"github.com/angryscorp/gophermart/internal/repository/orders/db"
 	"github.com/angryscorp/gophermart/internal/utils"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Orders struct {
 	queries *db.Queries
+	pool    *pgxpool.Pool
 }
 
 var _ repository.Orders = (*Orders)(nil)
@@ -25,7 +28,10 @@ func New(dsn string) (*Orders, error) {
 		return nil, fmt.Errorf("failed to create pool: %w", err)
 	}
 
-	return &Orders{queries: db.New(pool)}, nil
+	return &Orders{
+		queries: db.New(pool),
+		pool:    pool,
+	}, nil
 }
 
 func (o Orders) OrderInfoForUpdate(ctx context.Context, number string) (*model.Order, error) {
@@ -60,12 +66,28 @@ func (o Orders) CreateOrder(ctx context.Context, order model.Order) error {
 }
 
 func (o Orders) UpdateOrder(ctx context.Context, order model.Order) error {
-	if err := o.queries.UpdateOrder(ctx, db.UpdateOrderParams{
+	tx, err := o.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func(tx pgx.Tx, ctx context.Context) {
+		_ = tx.Rollback(ctx)
+	}(tx, ctx)
+
+	qtx := o.queries.WithTx(tx)
+
+	// Update order info
+	if err := qtx.UpdateOrder(ctx, db.UpdateOrderParams{
 		Status:  string(order.Status),
 		Accrual: int32(order.Accrual),
 		Number:  order.Number,
 		UserID:  order.UserID,
 	}); err != nil {
+		return err
+	}
+
+	// Update balance
+	if err := qtx.IncreaseBalance(ctx, order.Number); err != nil {
 		return err
 	}
 

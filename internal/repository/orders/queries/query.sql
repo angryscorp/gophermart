@@ -40,3 +40,15 @@ SET
 WHERE
     number = @number AND
     user_id = @user_id;
+
+-- name: IncreaseBalance :exec
+UPDATE balances
+SET
+    balance = balance + orders.accrual
+FROM
+    orders
+WHERE
+    balances.user_id = orders.user_id
+  AND
+    orders.number = @number;
+
