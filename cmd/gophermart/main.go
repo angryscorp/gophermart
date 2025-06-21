@@ -60,7 +60,7 @@ func main() {
 	}
 
 	requestChan := make(chan string)
-	responseChan := make(chan model.Accrual)
+	responseChan := make(chan *model.Accrual)
 
 	accrualAdapter := accrual.NewAdapter(&http.Client{}, zeroLogger, cfg.AccrualAddress)
 	accrualWorker := accrual.NewWorker(accrualAdapter, 10, requestChan, responseChan) // TODO

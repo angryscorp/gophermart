@@ -10,10 +10,10 @@ type withdrawal struct{}
 var Withdrawal = withdrawal{}
 
 func (m withdrawal) ToDomainModel(row db.WithdrawalsRow) model.Withdrawal {
-	v, _ := row.Withdrawn.Int64Value()
+	v, _ := row.Withdrawn.Float64Value()
 	return model.Withdrawal{
 		Order:       row.OrderNumber,
-		Sum:         int(v.Int64),
+		Sum:         v.Float64,
 		ProcessedAt: row.ProcessedAt.Time,
 	}
 }

@@ -12,7 +12,7 @@ import (
 type Order struct {
 	Number     string
 	Status     string
-	Accrual    int32
+	Accrual    pgtype.Numeric
 	UploadedAt pgtype.Timestamp
 	UserID     uuid.UUID
 }

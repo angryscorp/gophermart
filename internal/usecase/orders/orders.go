@@ -14,7 +14,7 @@ import (
 type Orders struct {
 	repository   repository.Orders
 	requestChan  chan string
-	responseChan chan model.Accrual
+	responseChan chan *model.Accrual
 	ctx          context.Context
 	logger       zerolog.Logger
 }
@@ -24,7 +24,7 @@ var _ usecase.Orders = (*Orders)(nil)
 func New(
 	repository repository.Orders,
 	requestChan chan string,
-	responseChan chan model.Accrual,
+	responseChan chan *model.Accrual,
 	logger zerolog.Logger,
 ) Orders {
 	orders := Orders{
@@ -94,24 +94,19 @@ func (o Orders) listenResponses() {
 	}
 }
 
-func newOrder(accrual model.Accrual) *model.Order {
+func newOrder(accrual *model.Accrual) *model.Order {
 	switch accrual.Status {
 	case model.AccrualStatusProcessed:
-		accrualValue := 0
-		if accrual.Accrual != nil {
-			accrualValue = *accrual.Accrual
-		}
 		return &model.Order{
 			Number:  accrual.Order,
 			Status:  model.OrderStatusProcessed,
-			Accrual: accrualValue,
+			Accrual: accrual.Accrual,
 		}
 
 	case model.AccrualStatusInvalid:
 		return &model.Order{
-			Number:  accrual.Order,
-			Status:  model.OrderStatusInvalid,
-			Accrual: 0,
+			Number: accrual.Order,
+			Status: model.OrderStatusInvalid,
 		}
 
 	default:

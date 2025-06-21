@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const allOrders = `-- name: AllOrders :many
@@ -127,7 +128,7 @@ WHERE
 
 type UpdateOrderParams struct {
 	Status  string
-	Accrual int32
+	Accrual pgtype.Numeric
 	Number  string
 	UserID  uuid.UUID
 }

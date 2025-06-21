@@ -15,14 +15,14 @@ type Worker struct {
 	accrual      usecase.Accrual
 	rateLimiter  int
 	requestChan  chan string
-	responseChan chan model.Accrual
+	responseChan chan *model.Accrual
 }
 
 func NewWorker(
 	accrual usecase.Accrual,
 	rateLimiter int,
 	requestChan chan string,
-	responseChan chan model.Accrual,
+	responseChan chan *model.Accrual,
 ) Worker {
 	return Worker{
 		accrual:      accrual,

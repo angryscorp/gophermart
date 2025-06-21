@@ -43,7 +43,7 @@ func (b Balance) Balance(ctx context.Context, userID uuid.UUID) (model.Balance, 
 	return mapper.Balance.ToDomainModel(row), nil
 }
 
-func (b Balance) Withdraw(ctx context.Context, userID uuid.UUID, orderID string, amount int) error {
+func (b Balance) Withdraw(ctx context.Context, userID uuid.UUID, orderID string, amount float64) error {
 	tx, err := b.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -60,14 +60,14 @@ func (b Balance) Withdraw(ctx context.Context, userID uuid.UUID, orderID string,
 		return errors.Wrap(err, "failed to check balance")
 	}
 
-	currentBalance := mapper.Balance.NumericToInt(row.Balance)
+	currentBalance := mapper.Balance.NumericToFloat(row.Balance)
 	if currentBalance < amount {
 		return model.ErrUnsufficientFunds
 	}
 
 	// New Balance
-	newBalance := mapper.Balance.IntToNumeric(currentBalance - amount)
-	newWithdrawn := mapper.Balance.IntToNumeric(mapper.Balance.NumericToInt(row.Withdrawn) + amount)
+	newBalance := mapper.Balance.FloatToNumeric(currentBalance - amount)
+	newWithdrawn := mapper.Balance.FloatToNumeric(mapper.Balance.NumericToFloat(row.Withdrawn) + amount)
 	err = qtx.UpdateBalance(ctx, db.UpdateBalanceParams{
 		Balance:   newBalance,
 		Withdrawn: newWithdrawn,
@@ -81,7 +81,7 @@ func (b Balance) Withdraw(ctx context.Context, userID uuid.UUID, orderID string,
 	err = qtx.AddWithdrawal(ctx, db.AddWithdrawalParams{
 		OrderNumber: orderID,
 		UserID:      userID,
-		Withdrawn:   mapper.Balance.IntToNumeric(amount),
+		Withdrawn:   mapper.Balance.FloatToNumeric(amount),
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to add withdrawal")

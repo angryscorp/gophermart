@@ -13,7 +13,7 @@ var Balance = balance{}
 func (m balance) ToDomainModel(row db.BalanceRow) model.Balance {
 	return model.Balance{
 		Current:   m.NumericToFloat(row.Balance),
-		Withdrawn: m.NumericToInt(row.Withdrawn),
+		Withdrawn: m.NumericToFloat(row.Withdrawn),
 	}
 }
 
@@ -22,12 +22,7 @@ func (m balance) NumericToFloat(value pgtype.Numeric) float64 {
 	return v.Float64
 }
 
-func (m balance) NumericToInt(value pgtype.Numeric) int {
-	v, _ := value.Int64Value()
-	return int(v.Int64)
-}
-
-func (m balance) IntToNumeric(value int) pgtype.Numeric {
+func (m balance) FloatToNumeric(value float64) pgtype.Numeric {
 	v := pgtype.Numeric{}
 	_ = v.Scan(value)
 	return v

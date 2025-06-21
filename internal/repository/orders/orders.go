@@ -9,6 +9,7 @@ import (
 	"github.com/angryscorp/gophermart/internal/domain/repository"
 	"github.com/angryscorp/gophermart/internal/repository/common"
 	"github.com/angryscorp/gophermart/internal/repository/orders/db"
+	"github.com/angryscorp/gophermart/internal/repository/orders/mapper"
 	"github.com/angryscorp/gophermart/internal/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -47,7 +48,7 @@ func (o Orders) OrderInfoForUpdate(ctx context.Context, number string) (*model.O
 		Number:     order.Number,
 		UserID:     order.UserID,
 		Status:     model.NewOrderStatus(order.Status),
-		Accrual:    int(order.Accrual),
+		Accrual:    mapper.Mapper.NumericToFloat(order.Accrual),
 		UploadedAt: order.UploadedAt.Time,
 	}, nil
 }
@@ -79,7 +80,7 @@ func (o Orders) UpdateOrder(ctx context.Context, order model.Order) error {
 	// Update order info
 	if err := qtx.UpdateOrder(ctx, db.UpdateOrderParams{
 		Status:  string(order.Status),
-		Accrual: int32(order.Accrual),
+		Accrual: mapper.Mapper.FloatToNumeric(order.Accrual),
 		Number:  order.Number,
 		UserID:  order.UserID,
 	}); err != nil {
@@ -105,7 +106,7 @@ func (o Orders) AllOrders(ctx context.Context, userID uuid.UUID) ([]model.Order,
 			Number:     item.Number,
 			UserID:     item.UserID,
 			Status:     model.NewOrderStatus(item.Status),
-			Accrual:    int(item.Accrual),
+			Accrual:    mapper.Mapper.NumericToFloat(item.Accrual),
 			UploadedAt: item.UploadedAt.Time,
 		}
 	}), nil

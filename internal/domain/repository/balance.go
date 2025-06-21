@@ -8,6 +8,6 @@ import (
 
 type Balance interface {
 	Balance(ctx context.Context, userID uuid.UUID) (model.Balance, error)
-	Withdraw(ctx context.Context, userID uuid.UUID, orderID string, amount int) error
+	Withdraw(ctx context.Context, userID uuid.UUID, orderID string, amount float64) error
 	WithdrawalHistory(ctx context.Context, userID uuid.UUID) ([]model.Withdrawal, error)
 }

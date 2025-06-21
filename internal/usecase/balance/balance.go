@@ -26,7 +26,7 @@ func (b Balance) Balance(ctx context.Context, userID uuid.UUID) (model.Balance, 
 	return b.repository.Balance(ctx, userID)
 }
 
-func (b Balance) Withdraw(ctx context.Context, userID uuid.UUID, orderNumber string, amount int) error {
+func (b Balance) Withdraw(ctx context.Context, userID uuid.UUID, orderNumber string, amount float64) error {
 	if orderNumber == "" {
 		return usecase.ErrOrderNumberIsInvalid
 	}
