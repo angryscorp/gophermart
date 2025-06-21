@@ -7,15 +7,66 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const dummy = `-- name: Dummy :one
-SELECT 1 FROM users
+const balance = `-- name: Balance :one
+SELECT
+    balance,
+    withdrawn
+FROM
+    balances
+WHERE
+    user_id = $1
 `
 
-func (q *Queries) Dummy(ctx context.Context) (int32, error) {
-	row := q.db.QueryRow(ctx, dummy)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+type BalanceRow struct {
+	Balance   pgtype.Numeric
+	Withdrawn pgtype.Numeric
+}
+
+func (q *Queries) Balance(ctx context.Context, userID uuid.UUID) (BalanceRow, error) {
+	row := q.db.QueryRow(ctx, balance, userID)
+	var i BalanceRow
+	err := row.Scan(&i.Balance, &i.Withdrawn)
+	return i, err
+}
+
+const withdrawals = `-- name: Withdrawals :many
+SELECT
+    order_number,
+    withdrawn,
+    processed_at
+FROM
+    withdrawals
+WHERE
+    user_id = $1
+`
+
+type WithdrawalsRow struct {
+	OrderNumber string
+	Withdrawn   pgtype.Numeric
+	ProcessedAt pgtype.Timestamptz
+}
+
+func (q *Queries) Withdrawals(ctx context.Context, userID uuid.UUID) ([]WithdrawalsRow, error) {
+	rows, err := q.db.Query(ctx, withdrawals, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []WithdrawalsRow
+	for rows.Next() {
+		var i WithdrawalsRow
+		if err := rows.Scan(&i.OrderNumber, &i.Withdrawn, &i.ProcessedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
