@@ -12,8 +12,13 @@ func GetUserID(ctx *gin.Context) (*uuid.UUID, error) {
 		return nil, errors.New("user is not authenticated")
 	}
 
-	userUUID, ok := userID.(uuid.UUID)
+	userIDStr, ok := userID.(string)
 	if !ok {
+		return nil, errors.New("invalid user ID format")
+	}
+
+	userUUID, err := uuid.Parse(userIDStr)
+	if err != nil {
 		return nil, errors.New("invalid user ID")
 	}
 

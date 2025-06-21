@@ -31,6 +31,7 @@ func main() {
 	}
 
 	zeroLogger := zerolog.New(os.Stdout).
+		Level(zerolog.DebugLevel). // TODO
 		With().
 		Timestamp().
 		Logger()
@@ -70,13 +71,15 @@ func main() {
 	balanceUsecase := balance.New(balanceRepository)
 
 	r := router.New(zeroLogger, authUsecase)
-	r.RegisterAuth(handlerAuth.New(authUsecase))
-	r.RegisterOrders(handlerOrders.New(ordersUsecase))
-	r.RegisterBalance(handlerBalance.New(balanceUsecase))
+	r.RegisterAuth(handlerAuth.New(authUsecase, zeroLogger))
+	r.RegisterOrders(handlerOrders.New(ordersUsecase, zeroLogger))
+	r.RegisterBalance(handlerBalance.New(balanceUsecase, zeroLogger))
 
 	err = r.Run(cfg.ServerAddress)
 	if err != nil {
 		_, _ = fmt.Fprint(os.Stderr, err.Error())
 		os.Exit(1)
 	}
+
+	zeroLogger.Info().Msg("Application starting...")
 }

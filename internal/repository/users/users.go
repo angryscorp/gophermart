@@ -60,8 +60,8 @@ func (r Users) CreateUser(ctx context.Context, username, passwordHash string) (*
 	}); err != nil {
 		return nil, errors.Wrap(model.ErrUnknownInternalError, err.Error())
 	}
-	
-	err = r.queries.CreateBalance(ctx, newID)
+
+	err = qtx.CreateBalance(ctx, newID)
 	if err != nil {
 		return nil, errors.Wrap(model.ErrUnknownInternalError, err.Error())
 	}

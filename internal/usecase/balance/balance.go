@@ -23,7 +23,7 @@ func New(repository repository.Balance) Balance {
 }
 
 func (b Balance) Balance(ctx context.Context, userID uuid.UUID) (model.Balance, error) {
-	return model.Balance{Current: 123, Withdrawn: 45}, nil
+	return b.repository.Balance(ctx, userID)
 }
 
 func (b Balance) Withdraw(ctx context.Context, userID uuid.UUID, orderNumber string, amount int) error {
@@ -40,7 +40,7 @@ func (b Balance) Withdraw(ctx context.Context, userID uuid.UUID, orderNumber str
 	if err != nil {
 		return errors.Wrap(err, "failed to withdraw")
 	}
-	
+
 	return nil
 }
 

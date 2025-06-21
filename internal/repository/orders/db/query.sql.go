@@ -81,7 +81,7 @@ SELECT
 FROM
     orders
 WHERE
-    number == $1
+    number = $1
 FOR UPDATE
 `
 

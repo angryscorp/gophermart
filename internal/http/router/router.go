@@ -10,7 +10,7 @@ import (
 
 type Router struct {
 	engine         *gin.Engine
-	tokenValidator usecase.TokenValidator
+	authMiddleware gin.HandlerFunc
 }
 
 func New(
@@ -24,7 +24,7 @@ func New(
 
 	return Router{
 		engine:         engine,
-		tokenValidator: tokenValidator,
+		authMiddleware: middleware.AuthValidation(tokenValidator, zeroLogger),
 	}
 }
 
@@ -38,12 +38,12 @@ func (r Router) RegisterAuth(auth AuthHandler) {
 }
 
 func (r Router) RegisterOrders(orders OrdersHandler) {
-	r.engine.POST("/api/user/orders", middleware.AuthValidation(r.tokenValidator), orders.UploadOrder)
-	r.engine.GET("/api/user/orders", middleware.AuthValidation(r.tokenValidator), orders.AllOrders)
+	r.engine.POST("/api/user/orders", r.authMiddleware, orders.UploadOrder)
+	r.engine.GET("/api/user/orders", r.authMiddleware, orders.AllOrders)
 }
 
 func (r Router) RegisterBalance(balance BalanceHandler) {
-	r.engine.GET("/api/user/balance", middleware.AuthValidation(r.tokenValidator), balance.Balance)
-	r.engine.POST("/api/user/balance/withdraw", middleware.AuthValidation(r.tokenValidator), balance.Withdraw)
-	r.engine.GET("/api/user/withdrawals", middleware.AuthValidation(r.tokenValidator), balance.AllWithdrawals)
+	r.engine.GET("/api/user/balance", r.authMiddleware, balance.Balance)
+	r.engine.POST("/api/user/balance/withdraw", r.authMiddleware, balance.Withdraw)
+	r.engine.GET("/api/user/withdrawals", r.authMiddleware, balance.AllWithdrawals)
 }

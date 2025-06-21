@@ -4,7 +4,7 @@ SELECT
 FROM
     orders
 WHERE
-    number == @number
+    number = @number
 FOR UPDATE;
 
 -- name: CreateOrder :exec
