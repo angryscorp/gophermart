@@ -25,6 +25,16 @@ func (q *Queries) CheckUsername(ctx context.Context, username string) (bool, err
 	return user_exists, err
 }
 
+const createBalance = `-- name: CreateBalance :exec
+INSERT INTO balances (user_id, balance, withdrawn)
+VALUES ($1, 0, 0)
+`
+
+func (q *Queries) CreateBalance(ctx context.Context, userID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, createBalance, userID)
+	return err
+}
+
 const createUser = `-- name: CreateUser :exec
 INSERT INTO users (id, username, password_hash)
 VALUES ($1, $2, $3)

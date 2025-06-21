@@ -16,3 +16,10 @@ FROM
     withdrawals
 WHERE
     user_id = @user_id;
+
+-- name: UpdateBalance :exec
+UPDATE balances
+SET balance = @balance,
+    withdrawn = @withdrawn
+WHERE
+    user_id = @user_id;

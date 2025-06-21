@@ -12,3 +12,6 @@ SELECT EXISTS(
     WHERE username = $1
 ) AS user_exists;
 
+-- name: CreateBalance :exec
+INSERT INTO balances (user_id, balance, withdrawn)
+VALUES (@user_id, 0, 0);

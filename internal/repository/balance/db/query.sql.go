@@ -34,6 +34,25 @@ func (q *Queries) Balance(ctx context.Context, userID uuid.UUID) (BalanceRow, er
 	return i, err
 }
 
+const updateBalance = `-- name: UpdateBalance :exec
+UPDATE balances
+SET balance = $1,
+    withdrawn = $2
+WHERE
+    user_id = $3
+`
+
+type UpdateBalanceParams struct {
+	Balance   pgtype.Numeric
+	Withdrawn pgtype.Numeric
+	UserID    uuid.UUID
+}
+
+func (q *Queries) UpdateBalance(ctx context.Context, arg UpdateBalanceParams) error {
+	_, err := q.db.Exec(ctx, updateBalance, arg.Balance, arg.Withdrawn, arg.UserID)
+	return err
+}
+
 const withdrawals = `-- name: Withdrawals :many
 SELECT
     order_number,
