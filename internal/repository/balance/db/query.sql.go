@@ -14,7 +14,7 @@ import (
 
 const addWithdrawal = `-- name: AddWithdrawal :exec
 INSERT INTO withdrawals (id, user_id, order_number, withdrawn, processed_at)
-VALUES ($1, $2, $3, $4, $5)
+VALUES ($1, $2, $3, $4, NOW())
 `
 
 type AddWithdrawalParams struct {
@@ -22,7 +22,6 @@ type AddWithdrawalParams struct {
 	UserID      uuid.UUID
 	OrderNumber string
 	Withdrawn   pgtype.Numeric
-	ProcessedAt pgtype.Timestamptz
 }
 
 func (q *Queries) AddWithdrawal(ctx context.Context, arg AddWithdrawalParams) error {
@@ -31,7 +30,6 @@ func (q *Queries) AddWithdrawal(ctx context.Context, arg AddWithdrawalParams) er
 		arg.UserID,
 		arg.OrderNumber,
 		arg.Withdrawn,
-		arg.ProcessedAt,
 	)
 	return err
 }

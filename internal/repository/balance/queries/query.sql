@@ -36,4 +36,4 @@ FOR UPDATE;
 
 -- name: AddWithdrawal :exec
 INSERT INTO withdrawals (id, user_id, order_number, withdrawn, processed_at)
-VALUES (@id, @user_id, @order_number, @withdrawn, @processed_at);
+VALUES (@id, @user_id, @order_number, @withdrawn, NOW());

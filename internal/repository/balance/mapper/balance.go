@@ -4,6 +4,7 @@ import (
 	"github.com/angryscorp/gophermart/internal/domain/model"
 	"github.com/angryscorp/gophermart/internal/repository/balance/db"
 	"github.com/jackc/pgx/v5/pgtype"
+	"strconv"
 )
 
 type balance struct{}
@@ -24,6 +25,6 @@ func (m balance) NumericToFloat(value pgtype.Numeric) float64 {
 
 func (m balance) FloatToNumeric(value float64) pgtype.Numeric {
 	v := pgtype.Numeric{}
-	_ = v.Scan(value)
+	_ = v.Scan(strconv.FormatFloat(value, 'f', 2, 64))
 	return v
 }
