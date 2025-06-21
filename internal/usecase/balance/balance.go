@@ -7,6 +7,7 @@ import (
 	"github.com/angryscorp/gophermart/internal/domain/usecase"
 	"github.com/angryscorp/gophermart/internal/utils"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 )
 
 type Balance struct {
@@ -35,8 +36,11 @@ func (b Balance) Withdraw(ctx context.Context, userID uuid.UUID, orderNumber str
 		return usecase.ErrOrderNumberIsInvalid
 	}
 
-	// ErrUnsufficientFunds
-
+	err := b.repository.Withdraw(ctx, userID, orderNumber, amount)
+	if err != nil {
+		return errors.Wrap(err, "failed to withdraw")
+	}
+	
 	return nil
 }
 

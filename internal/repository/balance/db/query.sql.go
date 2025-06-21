@@ -12,6 +12,30 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const addWithdrawal = `-- name: AddWithdrawal :exec
+INSERT INTO withdrawals (id, user_id, order_number, withdrawn, processed_at)
+VALUES ($1, $2, $3, $4, $5)
+`
+
+type AddWithdrawalParams struct {
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	OrderNumber string
+	Withdrawn   pgtype.Numeric
+	ProcessedAt pgtype.Timestamptz
+}
+
+func (q *Queries) AddWithdrawal(ctx context.Context, arg AddWithdrawalParams) error {
+	_, err := q.db.Exec(ctx, addWithdrawal,
+		arg.ID,
+		arg.UserID,
+		arg.OrderNumber,
+		arg.Withdrawn,
+		arg.ProcessedAt,
+	)
+	return err
+}
+
 const balance = `-- name: Balance :one
 SELECT
     balance,
@@ -30,6 +54,29 @@ type BalanceRow struct {
 func (q *Queries) Balance(ctx context.Context, userID uuid.UUID) (BalanceRow, error) {
 	row := q.db.QueryRow(ctx, balance, userID)
 	var i BalanceRow
+	err := row.Scan(&i.Balance, &i.Withdrawn)
+	return i, err
+}
+
+const checkBalanceForUpdate = `-- name: CheckBalanceForUpdate :one
+SELECT
+    balance,
+    withdrawn
+FROM
+    balances
+WHERE
+    user_id = $1
+FOR UPDATE
+`
+
+type CheckBalanceForUpdateRow struct {
+	Balance   pgtype.Numeric
+	Withdrawn pgtype.Numeric
+}
+
+func (q *Queries) CheckBalanceForUpdate(ctx context.Context, userID uuid.UUID) (CheckBalanceForUpdateRow, error) {
+	row := q.db.QueryRow(ctx, checkBalanceForUpdate, userID)
+	var i CheckBalanceForUpdateRow
 	err := row.Scan(&i.Balance, &i.Withdrawn)
 	return i, err
 }
