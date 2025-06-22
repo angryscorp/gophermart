@@ -16,3 +16,13 @@ status:
 
 .PHONY: restart
 restart: stop start
+
+.PHONY: test-coverage
+test-coverage:
+	@go test -coverprofile=coverage.out ./...
+	@go tool cover -func=coverage.out | grep total | awk '{print "Total coverage: " $$3}'
+	@rm -f coverage.out
+
+.PHONY: test
+test:
+	go test ./...

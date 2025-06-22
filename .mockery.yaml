@@ -1,0 +1,12 @@
+# main config
+disable-version-string: True
+dir: "{{.InterfaceDir}}/mocks"
+mockname: "{{.InterfaceName}}Mock"
+filename: "{{.InterfaceName | snakecase}}_mock.go"
+all: True
+outpkg: mocks
+
+#packages config
+packages:
+  github.com/angryscorp/gophermart/internal/domain/usecase:
+  github.com/angryscorp/gophermart/internal/domain/repository:
