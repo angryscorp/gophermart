@@ -31,7 +31,7 @@ func main() {
 	}
 
 	zeroLogger := zerolog.New(os.Stdout).
-		Level(zerolog.DebugLevel). // TODO
+		Level(cfg.LogLevel()).
 		With().
 		Timestamp().
 		Logger()
@@ -63,10 +63,10 @@ func main() {
 	responseChan := make(chan *model.Accrual)
 
 	accrualAdapter := accrual.NewAdapter(&http.Client{}, zeroLogger, cfg.AccrualAddress)
-	accrualWorker := accrual.NewWorker(accrualAdapter, 10, requestChan, responseChan) // TODO
+	accrualWorker := accrual.NewWorker(accrualAdapter, cfg.RateLimiter, requestChan, responseChan)
 	accrualWorker.Run()
 
-	authUsecase := auth.New(usersRepository, "secret") // TODO
+	authUsecase := auth.New(usersRepository, cfg.JWTSecret)
 	ordersUsecase := orders.New(ordersRepository, requestChan, responseChan, zeroLogger)
 	balanceUsecase := balance.New(balanceRepository)
 
@@ -75,11 +75,11 @@ func main() {
 	r.RegisterOrders(handlerOrders.New(ordersUsecase, zeroLogger))
 	r.RegisterBalance(handlerBalance.New(balanceUsecase, zeroLogger))
 
+	zeroLogger.Info().Str("address", cfg.ServerAddress).Msg("Application starting...")
+
 	err = r.Run(cfg.ServerAddress)
 	if err != nil {
 		_, _ = fmt.Fprint(os.Stderr, err.Error())
 		os.Exit(1)
 	}
-
-	zeroLogger.Info().Msg("Application starting...")
 }

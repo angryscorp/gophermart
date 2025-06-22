@@ -33,6 +33,9 @@ services:
       - RUN_ADDRESS=:8081
       - ACCRUAL_SYSTEM_ADDRESS=:8080
       - DATABASE_URI=postgres://db_user:db_password@postgres:5432/gophermart?sslmode=disable
+      - DEBUG=true
+      - JWT_SECRET="SECRET"
+      - RATE_LIMITER=10
 
 networks:
   app-network:
