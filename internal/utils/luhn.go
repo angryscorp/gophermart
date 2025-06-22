@@ -10,6 +10,10 @@ func CheckLuhn(number string) bool {
 	}
 
 	length := len(digits)
+	if length == 0 {
+		return false
+	}
+
 	sum := 0
 	parity := length % 2
 
@@ -22,7 +26,7 @@ func CheckLuhn(number string) bool {
 			sum += 2 * digits[i]
 		}
 	}
-	
+
 	checkDigit := (10 - (sum % 10)) % 10
 	return digits[length-1] == checkDigit
 }
