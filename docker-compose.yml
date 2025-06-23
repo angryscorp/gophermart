@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: db_password
+      POSTGRES_DB: gophermart
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U db_user -d gophermart"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+
+  server:
+    build:
+      context: .
+      dockerfile: cmd/gophermart/Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      - RUN_ADDRESS=:8081
+      - ACCRUAL_SYSTEM_ADDRESS=:8080
+      - DATABASE_URI=postgres://db_user:db_password@postgres:5432/gophermart?sslmode=disable
+      - DEBUG=true
+      - JWT_SECRET="SECRET"
+      - RATE_LIMITER=10
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

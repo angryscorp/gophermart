@@ -1,0 +1,40 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "./internal/repository/users/queries"
+    schema: "./internal/repository/migration/migrations"
+    gen:
+      go:
+        package: "db"
+        out: "./internal/repository/users/db"
+        sql_package: "pgx/v5"
+        omit_unused_structs: true
+        overrides:
+          - db_type: "uuid"
+            go_type: "github.com/google/uuid.UUID"
+
+  - engine: "postgresql"
+    queries: "./internal/repository/orders/queries"
+    schema: "./internal/repository/migration/migrations"
+    gen:
+      go:
+        package: "db"
+        out: "./internal/repository/orders/db"
+        sql_package: "pgx/v5"
+        omit_unused_structs: true
+        overrides:
+          - db_type: "uuid"
+            go_type: "github.com/google/uuid.UUID"
+
+  - engine: "postgresql"
+    queries: "./internal/repository/balance/queries"
+    schema: "./internal/repository/migration/migrations"
+    gen:
+      go:
+        package: "db"
+        out: "./internal/repository/balance/db"
+        sql_package: "pgx/v5"
+        omit_unused_structs: true
+        overrides:
+          - db_type: "uuid"
+            go_type: "github.com/google/uuid.UUID"
