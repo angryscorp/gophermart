@@ -8,7 +8,7 @@ import (
 	"github.com/angryscorp/gophermart/internal/repository/balance/db"
 	"github.com/angryscorp/gophermart/internal/repository/balance/mapper"
 	"github.com/angryscorp/gophermart/internal/repository/common"
-	"github.com/angryscorp/gophermart/internal/utils"
+	"github.com/angryscorp/gophermart/internal/utils/slices"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -101,7 +101,7 @@ func (b Balance) WithdrawalHistory(ctx context.Context, userID uuid.UUID) ([]mod
 		return nil, errors.Wrap(err, "failed to get withdrawals")
 	}
 
-	return utils.Map(rows, func(row db.WithdrawalsRow) model.Withdrawal {
+	return slices.Map(rows, func(row db.WithdrawalsRow) model.Withdrawal {
 		return mapper.Withdrawal.ToDomainModel(row)
 	}), nil
 }

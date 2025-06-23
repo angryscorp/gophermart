@@ -5,7 +5,7 @@ import (
 	"github.com/angryscorp/gophermart/internal/domain/model"
 	"github.com/angryscorp/gophermart/internal/domain/repository"
 	"github.com/angryscorp/gophermart/internal/domain/usecase"
-	"github.com/angryscorp/gophermart/internal/utils"
+	"github.com/angryscorp/gophermart/internal/utils/luhn"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"time"
@@ -45,7 +45,7 @@ func (o Orders) UploadOrder(ctx context.Context, orderNumber string, userID uuid
 		return usecase.ErrOrderNumberIsInvalid
 	}
 
-	numberIsValid := utils.CheckLuhn(orderNumber)
+	numberIsValid := luhn.Validate(orderNumber)
 	if !numberIsValid {
 		return usecase.ErrOrderNumberIsInvalid
 	}

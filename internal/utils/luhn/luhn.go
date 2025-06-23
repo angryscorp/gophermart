@@ -1,6 +1,6 @@
-package utils
+package luhn
 
-func CheckLuhn(number string) bool {
+func Validate(number string) bool {
 	digits := make([]int, len(number))
 	for i, char := range number {
 		if char < '0' || char > '9' {

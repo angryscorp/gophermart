@@ -1,4 +1,4 @@
-package utils
+package luhn
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -21,7 +21,7 @@ func TestCheckLuhn(t *testing.T) {
 
 		for _, number := range validNumbers {
 			t.Run(number, func(t *testing.T) {
-				result := CheckLuhn(number)
+				result := Validate(number)
 				assert.True(t, result, "Expected %s to be valid", number)
 			})
 		}
@@ -40,7 +40,7 @@ func TestCheckLuhn(t *testing.T) {
 
 		for _, number := range invalidNumbers {
 			t.Run(number, func(t *testing.T) {
-				result := CheckLuhn(number)
+				result := Validate(number)
 				assert.False(t, result, "Expected %s to be invalid", number)
 			})
 		}
@@ -59,7 +59,7 @@ func TestCheckLuhn(t *testing.T) {
 
 		for _, input := range invalidInputs {
 			t.Run(input, func(t *testing.T) {
-				result := CheckLuhn(input)
+				result := Validate(input)
 				assert.False(t, result, "Expected %s to be invalid due to invalid characters", input)
 			})
 		}
@@ -81,7 +81,7 @@ func TestCheckLuhn(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
-				result := CheckLuhn(tc.number)
+				result := Validate(tc.number)
 				assert.Equal(t, tc.expected, result, "Test case: %s", tc.name)
 			})
 		}

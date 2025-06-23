@@ -10,7 +10,7 @@ import (
 	"github.com/angryscorp/gophermart/internal/repository/common"
 	"github.com/angryscorp/gophermart/internal/repository/orders/db"
 	"github.com/angryscorp/gophermart/internal/repository/orders/mapper"
-	"github.com/angryscorp/gophermart/internal/utils"
+	"github.com/angryscorp/gophermart/internal/utils/slices"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -104,7 +104,7 @@ func (o Orders) AllOrders(ctx context.Context, userID uuid.UUID) ([]model.Order,
 		return nil, err
 	}
 
-	return utils.Map(orders, func(item db.Order) model.Order {
+	return slices.Map(orders, func(item db.Order) model.Order {
 		return model.Order{
 			Number:     item.Number,
 			UserID:     item.UserID,
